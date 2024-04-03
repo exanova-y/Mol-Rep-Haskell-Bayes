@@ -1,1 +1,1 @@
-First version of monad-bayes.
+WELCOME TO THE CABAL.
