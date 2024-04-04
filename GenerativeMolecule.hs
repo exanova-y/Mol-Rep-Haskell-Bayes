@@ -72,7 +72,7 @@ appendAtom currentAtom listIDs@(nextID:restIDs) = do
                                , coordinate = nextAtomCoordinate
                                , bondList = []
                                }
-            let updatedBondList = currentBondList ++ [Bond (newAtom, CovalentBond {bondOrder = 1})]
+            let updatedBondList = currentBondList ++ [Bond {connectedAtom = newAtom, bondType = CovalentBond {bondOrder = 1}}]
             return (currentAtom { bondList = updatedBondList }, True, restIDs)
 appendAtom currentAtom [] = undefined
 

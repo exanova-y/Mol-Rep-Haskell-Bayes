@@ -9,13 +9,16 @@ import Control.Monad.Bayes.Class
 import Control.Monad.Bayes.Sampler
 import Control.Monad.Bayes.Traced.Basic
 import Control.Monad.Bayes.Weighted
-import Data.List (sort)
+import Data.List 
 import Numeric.Log( Log( Exp ), ln )
 
 newtype Molecule = Root Atom
 
-data Bond = DelocalisedI Integer ([Atom], BondType)
-            | Bond (Atom, BondType)
+data Bond =   Delocalised {delocNum :: Integer, 
+                           atoms :: [Atom], 
+                           bondType :: BondType}
+            | Bond {connectedAtom :: Atom, 
+                    bondType :: BondType}
 
 data Atom = Atom {
     atomId                   :: Integer,
@@ -39,5 +42,17 @@ data ElementAttributes = ElementAttributes
 newtype EquilibriumBondLength = Angstrom Double deriving (Read, Show, Eq)
 
 prettyPrintMolecule :: Molecule -> String
-prettyPrintMolecule (Root atom) = show (symbol (atomicSpec atom)) 
+prettyPrintMolecule (Root atom) = show (symbol (atomicSpec atom))
 
+-- prettyPrintAtom :: Atom -> String 
+-- prettyPrintAtom atom = show (symbol (atomicSpec atom)) ++ replicate 10 ' ' ++ ['\n'] ++ map prettyPrintAtom (bondList
+
+-- connectedAtoms :: Atom -> [Atom]
+-- conneectedAtoms atom = (bondList atom)
+
+-- -- Example Usage
+-- main :: IO ()
+-- main = do
+--   let exampleAtom = 
+--   let molecule = Root exampleAtom
+--   putStrLn $ prettyPrintMolecule molecule
