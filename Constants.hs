@@ -6,45 +6,47 @@ import Molecule
 import qualified Data.Vector as V
 
 -- Takes the bond order and two atomic symbols and gives the equilibrium bond length between them.
+-- Currently this is only working for covalent single bonds.
 equilibriumBondLengths :: Integer -> AtomicSymbol -> AtomicSymbol -> EquilibriumBondLength
 equilibriumBondLengths bondOrder symbol1 symbol2 =
-    case (symbol1, symbol2) of
-        (C, C)   -> Angstrom 1.54
-        (C, H)   -> Angstrom 1.09
-        (C, O)   -> Angstrom 1.43
-        (C, N)   -> Angstrom 1.47
-        (C, B)   -> Angstrom 1.55
-        (C, Fe)  -> Angstrom 1.84
-        (H, C)   -> Angstrom 1.09
-        (H, H)   -> Angstrom 0.74
-        (H, O)   -> Angstrom 0.96
-        (H, N)   -> Angstrom 1.01
-        (H, B)   -> Angstrom 1.19
-        (H, Fe)  -> Angstrom 1.52
-        (O, C)   -> Angstrom 1.43
-        (O, H)   -> Angstrom 0.96
-        (O, O)   -> Angstrom 1.48
-        (O, N)   -> Angstrom 1.40
-        (O, B)   -> Angstrom 1.49
-        (O, Fe)  -> Angstrom 1.70
-        (N, C)   -> Angstrom 1.47
-        (N, H)   -> Angstrom 1.01
-        (N, O)   -> Angstrom 1.40
-        (N, N)   -> Angstrom 1.45
-        (N, B)   -> Angstrom 1.55
-        (N, Fe)  -> Angstrom 1.76
-        (B, C)   -> Angstrom 1.55
-        (B, H)   -> Angstrom 1.19
-        (B, O)   -> Angstrom 1.49
-        (B, N)   -> Angstrom 1.55
-        (B, B)   -> Angstrom 1.59
-        (B, Fe)  -> Angstrom 2.03
-        (Fe, C)  -> Angstrom 1.84
-        (Fe, H)  -> Angstrom 1.52
-        (Fe, O)  -> Angstrom 1.70
-        (Fe, N)  -> Angstrom 1.76
-        (Fe, B)  -> Angstrom 2.03
-        (Fe, Fe) -> Angstrom 2.48
+    case (bondOrder, symbol1, symbol2) of
+        (1, C, C)   -> Angstrom 1.54
+        (1, C, H)   -> Angstrom 1.09
+        (1, C, O)   -> Angstrom 1.43
+        (1, C, N)   -> Angstrom 1.47
+        (1, C, B)   -> Angstrom 1.55
+        (1, C, Fe)  -> Angstrom 1.84
+        (1, H, C)   -> Angstrom 1.09
+        (1, H, H)   -> Angstrom 0.74
+        (1, H, O)   -> Angstrom 0.96
+        (1, H, N)   -> Angstrom 1.01
+        (1, H, B)   -> Angstrom 1.19
+        (1, H, Fe)  -> Angstrom 1.52
+        (1, O, C)   -> Angstrom 1.43
+        (1, O, H)   -> Angstrom 0.96
+        (1, O, O)   -> Angstrom 1.48
+        (1, O, N)   -> Angstrom 1.40
+        (1, O, B)   -> Angstrom 1.49
+        (1, O, Fe)  -> Angstrom 1.70
+        (1, N, C)   -> Angstrom 1.47
+        (1, N, H)   -> Angstrom 1.01
+        (1, N, O)   -> Angstrom 1.40
+        (1, N, N)   -> Angstrom 1.45
+        (1, N, B)   -> Angstrom 1.55
+        (1, N, Fe)  -> Angstrom 1.76
+        (1, B, C)   -> Angstrom 1.55
+        (1, B, H)   -> Angstrom 1.19
+        (1, B, O)   -> Angstrom 1.49
+        (1, B, N)   -> Angstrom 1.55
+        (1, B, B)   -> Angstrom 1.59
+        (1, B, Fe)  -> Angstrom 2.03
+        (1, Fe, C)  -> Angstrom 1.84
+        (1, Fe, H)  -> Angstrom 1.52
+        (1, Fe, O)  -> Angstrom 1.70
+        (1, Fe, N)  -> Angstrom 1.76
+        (1, Fe, B)  -> Angstrom 2.03
+        (1, Fe, Fe) -> Angstrom 2.48
+        (_, _, _)   -> undefined
 
 
 getMaxBonds :: AtomicSymbol -> Int

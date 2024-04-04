@@ -10,30 +10,35 @@ import Control.Monad.Bayes.Weighted
 import Data.List (sort)
 import Numeric.Log( Log( Exp ), ln )
 
-sampleNewPosition :: MonadSample m => EquilibriumBondLength -> m (Double, Double, Double)
-sampleNewPosition (Angstrom bondLength) = do
+sampleNewPosition :: MonadSample m => (Double, Double, Double) -> EquilibriumBondLength -> m (Double, Double, Double)
+sampleNewPosition (currX, currY, currZ) (Angstrom bondLength) = do
     theta <- uniform 0 (2 * pi)
     u <- uniform (-1) 1
     let phi = acos u
     let x = bondLength * sin phi * cos theta
     let y = bondLength * sin phi * sin theta
     let z = bondLength * cos phi
-    return (x, y, z)
+    return (currX + x, currY + y, currZ + z)
 
--- appendAtom :: MonadSample m => Atom -> [Integer] -> m (Atom, Bool)
--- appendAtom currentAtom listIDs@(nextID:restIDs) = do
---     let currentSymbol = symbol (atomicSpec currentAtom)
---     let maxBonds = getMaxBonds currentSymbol
---     let numExistingBonds = length (bondList currentAtom)
---     if numExistingBonds == maxBonds
---         then return (currentAtom, False)
---         else do
---           nextAtom <- categElementAttributes priorAbundances
---           nextBondPosition <- sampleNewPosition (equilibriumBondLengths currentSymbol (symbol nextAtom)) 
-            --  let updatedNextAtom = Atom { coordinate = nextCoordinate }
-            
---             let nextAtomSpec = elementAttributes nextAtomSymbol
---             let nextAtomId = nextID
+appendAtom :: MonadSample m => Atom -> [Integer] -> m (Atom, Bool, [Integer])
+appendAtom currentAtom listIDs@(nextID:restIDs) = do
+    let currentSymbol = symbol (atomicSpec currentAtom)
+    let currentBondList = bondList currentAtom
+    if length currentBondList == getMaxBonds currentSymbol
+        then return (currentAtom, False, listIDs)
+        else do
+            nextAtomSpec <- categElementAttributes priorAbundances
+            let nextSymbol = symbol nextAtomSpec
+            let bondLength = equilibriumBondLengths 1 currentSymbol nextSymbol
+            nextAtomCoordinate <- sampleNewPosition (coordinate currentAtom) bondLength
+            let newAtom = Atom { atomId = nextID
+                               , atomicSpec = nextAtomSpec
+                               , coordinate = nextAtomCoordinate
+                               , bondList = []
+                               }
+            let updatedBondList = currentBondList ++ [Bond (newAtom, CovalentBond {bondOrder = 1})]
+            return (currentAtom { bondList = updatedBondList }, True, restIDs)
+appendAtom currentAtom [] = undefined
 
 --             -- nextAtomSymbol <- uniform [O, H, N, C, P, S, Cl, B, Fe]
 --             -- let nextAtomSpec = elementAttributes nextAtomSymbol
@@ -61,7 +66,7 @@ testOrbital threshold = do
   sample <- normal 0 1
   return sample
 
-categElementAttributes :: MonadInfer m => V.Vector Double -> m ElementAttributes
+categElementAttributes :: MonadSample m => V.Vector Double -> m ElementAttributes
 categElementAttributes abundances = do
   index <- categorical abundances
   return $ case index of
