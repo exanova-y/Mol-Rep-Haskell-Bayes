@@ -24,7 +24,8 @@ sampleNewPosition (currX, currY, currZ) (Angstrom bondLength) = do
     return (currX + x, currY + y, currZ + z)
 
 -- This takes an atom, a stream of IDs and returns a the same atom with a bond to 
--- a new atom and the remainder of the stream of IDs.
+-- a new atom, a boolean value indicating whether the max number of bonds has been 
+-- reached for that atom and the remainder of the stream of IDs. 
 appendAtom :: MonadSample m => Atom -> [Integer] -> m (Atom, Bool, [Integer])
 appendAtom currentAtom listIDs@(nextID:restIDs) = do
     let currentSymbol = symbol (atomicSpec currentAtom)
@@ -61,6 +62,7 @@ testOrbital :: MonadSample m => Double -> m Double
 testOrbital threshold = do
   sample <- normal 0 1
   return sample
+
 
 categElementAttributes :: MonadSample m => V.Vector Double -> m ElementAttributes
 categElementAttributes abundances = do
