@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 import qualified Data.Vector as V
 import Control.Monad
 import Control.Monad.Bayes.Class
@@ -9,8 +11,8 @@ import Numeric.Log( Log( Exp ), ln )
 
 newtype Molecule = Root Atom
 
-data Bond = DelocalisedI Integer ([Atom], BondType, EquilibriumBondLength)
-            | Bond (Atom, BondType, EquilibriumBondLength)
+data Bond = DelocalisedI Integer ([Atom], BondType)
+            | Bond (Atom, BondType)
 
 data Atom = Atom {
     atomId                   :: Integer,
@@ -23,8 +25,6 @@ data BondType = HydrogenBond
               | CovalentBond {bondOrder :: Integer}  
               | IonicBond deriving (Eq, Read, Show)
 
-newtype EquilibriumBondLength = Angstrom Double deriving (Read, Show, Eq)
-
 data AtomicSymbol = O | H | N | C | P | S | Cl | B | Fe deriving (Eq, Read, Show)
 
 data ElementAttributes = ElementAttributes
@@ -34,15 +34,51 @@ data ElementAttributes = ElementAttributes
   } deriving (Eq, Read, Show)
 
 
--- appendAtom :: MonadSample m => ExtendedAtom -> m ExtendedAtom 
--- appendAtom ea = add bond to bondList maximum number of bonds for the atom e.g. carbon 4
+getMaxBonds :: AtomicSymbol -> Int
+getMaxBonds symbol =
+    case symbol of
+        O  -> 2
+        H  -> 1
+        N  -> 3
+        C  -> 4
+        P  -> 3
+        S  -> 2
+        Cl -> 1
+        B  -> 3
+        Fe -> 3
 
--- buildMolecule :: MonadSample m => () -> m InductiveMolecule
--- buildMolecule = do 
---   ea <- priorElementAttributes 
---   listOfIds <- [1..]
+-- appendAtom :: MonadSample m => Atom -> [Integer] -> m Atom
+-- appendAtom currentAtom listIDs@(nextID:restIDs) = do
+--     let currentSymbol = symbol (atomicSpec currentAtom)
+--     let maxBonds = getMaxBonds currentSymbol
+--     let numExistingBonds = length (bondList currentAtom)
+--     if numExistingBonds >= maxBonds
+--         then return currentAtom
+--         else do
+--             let atomicSymbols = [O, H, N, C, P, S, Cl, B, Fe]
+--             nextAtomSymbol <- uniformD atomicSymbols
+--             let nextAtomSpec = elementAttributes nextAtomSymbol
+--             let nextAtomId = nextID
 
+--             -- nextAtomSymbol <- uniform [O, H, N, C, P, S, Cl, B, Fe]
+--             -- let nextAtomSpec = elementAttributes nextAtomSymbol
+--             -- let nextAtomId = atomId currentAtom + 1
+--             -- let nextCoordinate = sampleCoordinate currentAtom
+--             -- let nextAtom = Atom nextAtomId nextAtomSpec nextCoordinate []
+--             -- let bondType = sampleBondType currentSymbol nextAtomSymbol
+--             -- let bondLength = sampleBondLength bondType
+--             -- let bond = Bond (nextAtom, bondType, bondLength)
+--             -- let updatedBondList = bond : bondList currentAtom
+--             -- return $ currentAtom {bondList = updatedBondList}
 
+-- -- buildMolecule :: MonadSample m => () -> m InductiveMolecule
+-- -- buildMolecule = do 
+-- --   ea <- priorElementAttributes 
+-- --   listOfIds <- [1..]
+
+-- addRing :: Atom -> [Integer]
+-- addRing currentAtom listIDs@(nextID:restIDs) = do
+--   ringSize <- uniformD [3..8]
 
 
 testOrbital :: MonadSample m => Double -> m Double
