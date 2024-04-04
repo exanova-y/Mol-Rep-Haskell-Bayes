@@ -10,6 +10,9 @@ import Control.Monad.Bayes.Weighted
 import Data.List (sort)
 import Numeric.Log( Log( Exp ), ln )
 
+
+-- This takes the current atom position and returns a new position
+-- with radius bondlength away from the atom sampled from a sphere.
 sampleNewPosition :: MonadSample m => (Double, Double, Double) -> EquilibriumBondLength -> m (Double, Double, Double)
 sampleNewPosition (currX, currY, currZ) (Angstrom bondLength) = do
     theta <- uniform 0 (2 * pi)
@@ -20,6 +23,8 @@ sampleNewPosition (currX, currY, currZ) (Angstrom bondLength) = do
     let z = bondLength * cos phi
     return (currX + x, currY + y, currZ + z)
 
+-- This takes an atom, a stream of IDs and returns a the same atom with a bond to 
+-- a new atom and the remainder of the stream of IDs.
 appendAtom :: MonadSample m => Atom -> [Integer] -> m (Atom, Bool, [Integer])
 appendAtom currentAtom listIDs@(nextID:restIDs) = do
     let currentSymbol = symbol (atomicSpec currentAtom)
@@ -40,16 +45,7 @@ appendAtom currentAtom listIDs@(nextID:restIDs) = do
             return (currentAtom { bondList = updatedBondList }, True, restIDs)
 appendAtom currentAtom [] = undefined
 
---             -- nextAtomSymbol <- uniform [O, H, N, C, P, S, Cl, B, Fe]
---             -- let nextAtomSpec = elementAttributes nextAtomSymbol
---             -- let nextAtomId = atomId currentAtom + 1
---             -- let nextCoordinate = sampleCoordinate currentAtom
---             -- let nextAtom = Atom nextAtomId nextAtomSpec nextCoordinate []
---             -- let bondType = sampleBondType currentSymbol nextAtomSymbol
---             -- let bondLength = sampleBondLength bondType
---             -- let bond = Bond (nextAtom, bondType, bondLength)
---             -- let updatedBondList = bond : bondList currentAtom
---             -- return $ currentAtom {bondList = updatedBondList}
+-- appendRingSite :: MonadSample m => Atom -> 
 
 -- -- buildMolecule :: MonadSample m => () -> m InductiveMolecule
 -- -- buildMolecule = do 
