@@ -20,7 +20,7 @@ initRoot :: MonadSample m => [Integer] -> m (Atom, [Integer])
 initRoot listIDs@(nextID:restIDs) = do 
     firstAtomSpec <- categElementAttributes priorAbundances
     initPosition <- liftM3 (,,) (normal 0.0 1.0) (normal 0.0 1.0) (normal 0.0 1.0)
-    initCoordinate <- sampleNewPosition initPosition (Angstrom 0.5)
+    initCoordinate <- sampleNewPosition initPosition (Angstrom 0.0)
     return (Atom {atomID = nextID, atomicSpec = firstAtomSpec, coordinate = initCoordinate, bondList = []}, restIDs)
 initRoot [] = undefined
 
@@ -88,20 +88,6 @@ categElementAttributes abundances = do
     4 -> elementAttributes B
     5 -> elementAttributes Fe
     _ -> elementAttributes C
-
-
-
-prettyPrintMolecule :: Molecule -> String
-prettyPrintMolecule (Root atom) = (prettyPrintAtom 0 atom)
-
-prettyPrintAtom :: Int -> Atom -> String
-prettyPrintAtom n atom = replicate (n*5) ' ' ++ show (symbol (atomicSpec atom)) ++ "\n" ++ concat (map (prettyPrintAtom (n+1)) (getChildren atom))
-
-getChildren :: Atom -> [Atom]
-getChildren atom = concatMap extractAtoms (bondList atom)
-  where
-    extractAtoms (Delocalised _ atoms _) = atoms
-    extractAtoms (Bond connectedAtom _)  = [connectedAtom]
 
 
 
