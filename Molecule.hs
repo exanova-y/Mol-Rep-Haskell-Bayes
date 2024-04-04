@@ -38,3 +38,6 @@ data ElementAttributes = ElementAttributes
 
 newtype EquilibriumBondLength = Angstrom Double deriving (Read, Show, Eq)
 
+prettyPrintMolecule :: Molecule -> String
+prettyPrintMolecule (Root atom) = show (symbol (atomicSpec atom)) 
+

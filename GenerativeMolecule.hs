@@ -10,6 +10,36 @@ import Control.Monad.Bayes.Weighted
 import Data.List (sort)
 import Numeric.Log( Log( Exp ), ln )
 
+-- data Atom = Atom {
+--     atomId                   :: Integer,
+--     atomicSpec               :: ElementAttributes, 
+--     coordinate               :: (Double, Double, Double),
+--     bondList                 :: [Bond]
+--   }
+
+-- data BondType = HydrogenBond 
+--               | CovalentBond {bondOrder :: Integer}  
+--               | IonicBond deriving (Eq, Read, Show)
+
+-- data AtomicSymbol = O | H | N | C | B | Fe deriving (Eq, Read, Show)
+
+-- data ElementAttributes = ElementAttributes
+--   { symbol :: AtomicSymbol,
+--     atomicNumber :: Integer,
+--     atomicWeight :: Double
+--   } deriving (Eq, Read, Show)
+
+initMolecule :: IO Atom
+initMolecule = fmap fst $ sampleIOfixed $ initRoot [1..]
+
+initRoot :: MonadSample m => [Integer] -> m (Atom, [Integer])
+initRoot listIDs@(nextID:restIDs) = do 
+    firstAtomSpec <- categElementAttributes priorAbundances
+    initPosition <- liftM3 (,,) (normal 0.0 1.0) (normal 0.0 1.0) (normal 0.0 1.0)
+    initCoordinate <- sampleNewPosition initPosition (Angstrom 0.5)
+    return (Atom {atomId = nextID, atomicSpec = firstAtomSpec, coordinate = initCoordinate, bondList = []}, restIDs)
+initRoot [] = undefined
+
 
 -- This takes the current atom position and returns a new position
 -- with radius bondlength away from the atom sampled from a sphere.
@@ -46,7 +76,13 @@ appendAtom currentAtom listIDs@(nextID:restIDs) = do
             return (currentAtom { bondList = updatedBondList }, True, restIDs)
 appendAtom currentAtom [] = undefined
 
--- appendRingSite :: MonadSample m => Atom -> 
+-- appendRing :: MonadSample m => Atom -> m (Atom, Bool)
+-- appendRing currentAtom listIDs@(nextID:restIDs) = do
+--     ringSize <- uniformD [3..8]
+
+
+
+-- determineSiteOfRing :: 
 
 -- -- buildMolecule :: MonadSample m => () -> m InductiveMolecule
 -- -- buildMolecule = do 
@@ -75,3 +111,8 @@ categElementAttributes abundances = do
     4 -> elementAttributes B
     5 -> elementAttributes Fe
     _ -> elementAttributes C
+
+
+
+
+
