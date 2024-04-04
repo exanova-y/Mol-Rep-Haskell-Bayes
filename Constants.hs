@@ -60,7 +60,7 @@ getMaxBonds symbol =
         Fe -> 3
 
 priorAbundances :: V.Vector Double
-priorAbundances = V.fromList [0.6179,0.3279,0.0378,0.0126,0.0025,0.0013]
+priorAbundances = V.fromList $ take 6 $ repeat (1.0/6.0)
 -- O (Oxygen): 0.49
 -- H (Hydrogen): 0.26
 -- N (Nitrogen): 0.03

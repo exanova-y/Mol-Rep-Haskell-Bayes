@@ -21,7 +21,7 @@ data Bond =   Delocalised {delocNum :: Integer,
                     bondType :: BondType}
 
 data Atom = Atom {
-    atomId                   :: Integer,
+    atomID                   :: Integer,
     atomicSpec               :: ElementAttributes, 
     coordinate               :: (Double, Double, Double),
     bondList                 :: [Bond]
@@ -41,18 +41,3 @@ data ElementAttributes = ElementAttributes
 
 newtype EquilibriumBondLength = Angstrom Double deriving (Read, Show, Eq)
 
-prettyPrintMolecule :: Molecule -> String
-prettyPrintMolecule (Root atom) = show (symbol (atomicSpec atom))
-
--- prettyPrintAtom :: Atom -> String 
--- prettyPrintAtom atom = show (symbol (atomicSpec atom)) ++ replicate 10 ' ' ++ ['\n'] ++ map prettyPrintAtom (bondList
-
--- connectedAtoms :: Atom -> [Atom]
--- conneectedAtoms atom = (bondList atom)
-
--- -- Example Usage
--- main :: IO ()
--- main = do
---   let exampleAtom = 
---   let molecule = Root exampleAtom
---   putStrLn $ prettyPrintMolecule molecule
