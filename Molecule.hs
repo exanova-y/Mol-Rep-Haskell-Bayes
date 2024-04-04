@@ -7,32 +7,23 @@ import Control.Monad.Bayes.Weighted
 import Data.List (sort)
 import Numeric.Log( Log( Exp ), ln )
 
-data Molecule = Molecule {atoms :: [Atom], bonds :: [Bond]} deriving (Eq, Read, Show)
+newtype Molecule = Root Atom
 
-data Bond = Delocalised Integer [(Atom, Atom, BondType, EquilibriumBondLength)]
-          | Bond (Atom, Atom, BondType, EquilibriumBondLength)
-          deriving (Eq, Read, Show)
-
-newtype InductiveMolecule = InitialAtom ExtendedAtom
-
-data ExtendedAtom = EAtom {atom :: Atom, bondList :: [InductiveBond]}
-
-data InductiveBond = DelocalisedI Integer ([ExtendedAtom], BondType, EquilibriumBondLength)
-                    | InductiveBond (ExtendedAtom, BondType, EquilibriumBondLength)
+data Bond = DelocalisedI Integer ([Atom], BondType, EquilibriumBondLength)
+            | Bond (Atom, BondType, EquilibriumBondLength)
 
 data Atom = Atom {
     atomId                   :: Integer,
     atomicSpec               :: ElementAttributes, 
-    coordinate               :: (Double, Double, Double)
-  } deriving (Eq, Read, Show)
+    coordinate               :: (Double, Double, Double),
+    bondList                 :: [Bond]
+  }
 
 data BondType = HydrogenBond 
               | CovalentBond {bondOrder :: Integer}  
               | IonicBond deriving (Eq, Read, Show)
 
-newtype Angstrom = Angstrom Double deriving (Read, Show, Eq)
-
-type EquilibriumBondLength = Angstrom
+newtype EquilibriumBondLength = Angstrom Double deriving (Read, Show, Eq)
 
 data AtomicSymbol = O | H | N | C | P | S | Cl | B | Fe deriving (Eq, Read, Show)
 
@@ -42,13 +33,25 @@ data ElementAttributes = ElementAttributes
     atomicWeight :: Double
   } deriving (Eq, Read, Show)
 
+
+-- appendAtom :: MonadSample m => ExtendedAtom -> m ExtendedAtom 
+-- appendAtom ea = add bond to bondList maximum number of bonds for the atom e.g. carbon 4
+
+-- buildMolecule :: MonadSample m => () -> m InductiveMolecule
+-- buildMolecule = do 
+--   ea <- priorElementAttributes 
+--   listOfIds <- [1..]
+
+
+
+
 testOrbital :: MonadSample m => Double -> m Double
 testOrbital threshold = do
   sample <- normal 0 1
   return sample
 
-abundances :: V.Vector Double
-abundances = V.fromList [0.49, 0.26, 0.03, 0.01, 0.008, 0.006, 0.004, 0.002, 0.001]
+priorAbundances :: V.Vector Double
+priorAbundances = V.fromList [0.49, 0.26, 0.03, 0.01, 0.008, 0.006, 0.004, 0.002, 0.001]
 -- O (Oxygen): 0.49
 -- H (Hydrogen): 0.26
 -- N (Nitrogen): 0.03
@@ -70,8 +73,8 @@ elementAttributes Cl = ElementAttributes Cl 17 35.453
 elementAttributes B = ElementAttributes B 5 10.811  
 elementAttributes Fe = ElementAttributes Fe 26 55.845
 
-priorElementAttributes :: MonadInfer m => m ElementAttributes
-priorElementAttributes = do
+categElementAttributes :: MonadInfer m => V.Vector Double -> m ElementAttributes
+categElementAttributes abundances = do
   index <- categorical abundances
   return $ case index of
     0 -> elementAttributes O
