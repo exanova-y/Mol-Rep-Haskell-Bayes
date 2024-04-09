@@ -1,3 +1,4 @@
+module GenerativeMolecule where
 
 import Constants 
 import Molecule 
@@ -10,19 +11,54 @@ import Control.Monad.Bayes.Weighted
 import Data.List (sort)
 import Numeric.Log( Log( Exp ), ln )
 
-initMolecule :: MonadSample m => m (Molecule, [Integer])
-initMolecule = do
+crossMol :: MonadSample m => m Atom
+crossMol = do
     (root, ids) <- initRoot [1..]
     (updatedRoot, remainingIDs) <- appendAtoms 4 root ids
-    return (Root updatedRoot, remainingIDs)
+    return updatedRoot
+
+appendAtoms :: MonadSample m => Int -> Atom -> [Integer] -> m (Atom, [Integer])
+appendAtoms 0 atom ids = return (atom, ids)
+appendAtoms n atom ids = do
+    (updatedAtom, success, remainingIDs) <- appendAtom atom ids
+    if success
+        then appendAtoms (n - 1) updatedAtom remainingIDs
+    else return (updatedAtom, remainingIDs)
 
 initRoot :: MonadSample m => [Integer] -> m (Atom, [Integer])
 initRoot listIDs@(nextID:restIDs) = do 
-    firstAtomSpec <- categElementAttributes priorAbundances
+    nextSymbol <- uniformD [O, H, N, C, B, Fe]
+    let firstAtomicAttr = elementAttributes nextSymbol
     initPosition <- liftM3 (,,) (normal 0.0 1.0) (normal 0.0 1.0) (normal 0.0 1.0)
-    initCoordinate <- sampleNewPosition initPosition (Angstrom 0.0)
-    return (Atom {atomID = nextID, atomicSpec = firstAtomSpec, coordinate = initCoordinate, bondList = []}, restIDs)
+    return (Atom {atomID = nextID, atomicAttr = firstAtomicAttr, coordinate = initPosition, bondList = []}, restIDs)
 initRoot [] = undefined
+
+
+-- This takes an atom, a stream of IDs and returns the same atom with a bond to 
+-- a new atom, a boolean value indicating whether the max number of bonds has been 
+-- reached for that atom and the remainder of the stream of IDs. It currently does not 
+-- deal with Delocalised bonds that may have fractional bond orders.
+appendAtom :: MonadSample m => Atom -> [Integer] -> m (Atom, Bool, [Integer])
+appendAtom currentAtom listIDs@(nextID:restIDs) = do
+    let currentSymbol = symbol (atomicAttr currentAtom)
+    let currentBondList = bondList currentAtom
+    if getMaxBonds currentAtom <= 0
+        then return (currentAtom, False, listIDs)
+        else do
+            nextSymbol <- uniformD [O, H, N, C, B, Fe]
+            let nextAtomicAttr = elementAttributes nextSymbol
+            bondOrder <- uniformD [1, 2, 3]
+            let bondLength = equilibriumBondLengths bondOrder currentSymbol nextSymbol
+            nextAtomCoordinate <- sampleNewPosition (coordinate currentAtom) bondLength
+            let newAtom = Atom { atomID = nextID
+                               , atomicAttr = nextAtomicAttr
+                               , coordinate = nextAtomCoordinate
+                               , bondList = [Bond {connectedAtom = currentAtom, bondType = CovalentBond {bondOrder = bondOrder}}]
+                               }
+            let updatedBondList = currentBondList ++ [Bond {connectedAtom = newAtom, bondType = CovalentBond {bondOrder = bondOrder}}]
+            return (currentAtom { bondList = updatedBondList }, True, restIDs)
+appendAtom currentAtom [] = undefined
+
 
 
 -- This takes the current atom position and returns a random position
@@ -37,90 +73,9 @@ sampleNewPosition (currX, currY, currZ) (Angstrom bondLength) = do
     let z = bondLength * cos phi
     return (currX + x, currY + y, currZ + z)
 
--- This takes an atom, a stream of IDs and returns the same atom with a bond to 
--- a new atom, a boolean value indicating whether the max number of bonds has been 
--- reached for that atom and the remainder of the stream of IDs. 
-appendAtom :: MonadSample m => Atom -> [Integer] -> m (Atom, Bool, [Integer])
-appendAtom currentAtom listIDs@(nextID:restIDs) = do
-    let currentSymbol = symbol (atomicSpec currentAtom)
-    let currentBondList = bondList currentAtom
-    if length currentBondList == getMaxBonds currentSymbol
-        then return (currentAtom, False, listIDs)
-        else do
-            nextAtomSpec <- categElementAttributes priorAbundances
-            let nextSymbol = symbol nextAtomSpec
-            let bondLength = equilibriumBondLengths 1 currentSymbol nextSymbol
-            nextAtomCoordinate <- sampleNewPosition (coordinate currentAtom) bondLength
-            let newAtom = Atom { atomID = nextID
-                               , atomicSpec = nextAtomSpec
-                               , coordinate = nextAtomCoordinate
-                               , bondList = []
-                               }
-            let updatedBondList = currentBondList ++ [Bond {connectedAtom = newAtom, bondType = CovalentBond {bondOrder = 1}}]
-            return (currentAtom { bondList = updatedBondList }, True, restIDs)
-appendAtom currentAtom [] = undefined
 
-appendAtoms :: MonadSample m => Int -> Atom -> [Integer] -> m (Atom, [Integer])
-appendAtoms 0 atom ids = return (atom, ids)
-appendAtoms n atom ids = do
-    (updatedAtom, success, remainingIDs) <- appendAtom atom ids
-    if success
-        then appendAtoms (n - 1) updatedAtom remainingIDs
-    else return (updatedAtom, remainingIDs)
-
-
-
-
-testOrbital :: MonadSample m => Double -> m Double
-testOrbital threshold = do
-  sample <- normal 0 1
-  return sample
-
-
-categElementAttributes :: MonadSample m => V.Vector Double -> m ElementAttributes
-categElementAttributes abundances = do
-  index <- categorical abundances
-  return $ case index of
-    0 -> elementAttributes O
-    1 -> elementAttributes H
-    2 -> elementAttributes N
-    3 -> elementAttributes C
-    4 -> elementAttributes B
-    5 -> elementAttributes Fe
-    _ -> elementAttributes C
-
-
-
-
-
-
--- Example Usage
-main :: IO ()
-main = do
-    sampleIO (initMolecule >>= \(mol, _) -> return (prettyPrintMolecule mol)) >>= putStrLn
-
-
-
-
-
-
-
-
-
--- appendRing :: MonadSample m => Atom -> m (Atom, Bool)
--- appendRing currentAtom listIDs@(nextID:restIDs) = do
---     ringSize <- uniformD [3..8]
-
-
-
--- determineSiteOfRing :: 
-
--- -- buildMolecule :: MonadSample m => () -> m InductiveMolecule
--- -- buildMolecule = do 
--- --   ea <- priorElementAttributes 
--- --   listOfIds <- [1..]
-
--- addRing :: Atom -> [Integer]
--- addRing currentAtom listIDs@(nextID:restIDs) = do
---   ringSize <- uniformD [3..8]
+-- -- Example Usage
+-- main :: IO ()
+-- main = do
+--     (sampleIO (prettyPrintMolecule crossMol)) >>= putStrLn
 
