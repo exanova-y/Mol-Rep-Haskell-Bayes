@@ -14,8 +14,8 @@ import Numeric.Log( Log( Exp ), ln )
 crossMol :: MonadSample m => m Atom
 crossMol = do
     (root, ids) <- initRoot [1..]
-    (updatedRoot, remainingIDs) <- appendAtoms 4 root ids
-    return updatedRoot
+    -- (updatedRoot, remainingIDs) <- appendAtoms 4 root ids
+    return root
 
 appendAtoms :: MonadSample m => Int -> Atom -> [Integer] -> m (Atom, [Integer])
 appendAtoms 0 atom ids = return (atom, ids)
@@ -28,9 +28,8 @@ appendAtoms n atom ids = do
 initRoot :: MonadSample m => [Integer] -> m (Atom, [Integer])
 initRoot listIDs@(nextID:restIDs) = do 
     nextSymbol <- uniformD [O, H, N, C, B, Fe]
-    let firstAtomicAttr = elementAttributes nextSymbol
     initPosition <- liftM3 (,,) (normal 0.0 1.0) (normal 0.0 1.0) (normal 0.0 1.0)
-    return (Atom {atomID = nextID, atomicAttr = firstAtomicAttr, coordinate = initPosition, bondList = []}, restIDs)
+    return (Atom {atomID = nextID, atomicAttr = elementAttributes nextSymbol, coordinate = initPosition, bondList = []}, restIDs)
 initRoot [] = undefined
 
 
@@ -72,10 +71,3 @@ sampleNewPosition (currX, currY, currZ) (Angstrom bondLength) = do
     let y = bondLength * sin phi * sin theta
     let z = bondLength * cos phi
     return (currX + x, currY + y, currZ + z)
-
-
--- -- Example Usage
--- main :: IO ()
--- main = do
---     (sampleIO (prettyPrintMolecule crossMol)) >>= putStrLn
-

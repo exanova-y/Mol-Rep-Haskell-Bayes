@@ -14,18 +14,18 @@ import Data.Maybe
 import Numeric.Log( Log( Exp ), ln )
 import Data.Time.Format.ISO8601 (yearFormat)
 
-data Bond =   Delocalised {delocNum :: Integer, 
-                           atoms :: [Atom], 
-                           bondType :: BondType}
-            | Bond {connectedAtom :: Atom, 
-                    bondType :: BondType}
-
 data Atom = Atom {
     atomID                   :: Integer,
     atomicAttr               :: ElementAttributes, 
     coordinate               :: (Double, Double, Double),
     bondList                 :: [Bond]
   }
+
+data Bond = Delocalised {delocNum :: Integer, 
+                           atoms :: [Atom], 
+                           bondType :: BondType}
+            | Bond {connectedAtom :: Atom, 
+                    bondType :: BondType}
 
 data BondType = HydrogenBond 
               | CovalentBond {bondOrder :: Integer}  
@@ -41,11 +41,38 @@ data ElementAttributes = ElementAttributes
 
 newtype EquilibriumBondLength = Angstrom Double deriving (Read, Show, Eq)
 
-prettyPrintMolecule :: Atom -> String
-prettyPrintMolecule atom = prettyPrintAtom 0 atom
+
+
+instance Show Atom where
+  show atom =
+    "atomID: "
+      ++ show (atomID atom)
+      ++ ", atomicAttr = "
+      ++ show (symbol $ atomicAttr atom)
+      ++ ", coordinate = "
+      ++ show (coordinate atom)
+      ++ ", bondList = ["
+      ++ showBonds (bondList atom)
+      ++ "]}"
+    where
+      showBonds [] = ""
+      showBonds [bond] = showBond bond
+      showBonds (bond : bonds) = showBond bond ++ ", " ++ showBonds bonds
+      
+      showBond (Bond atom bondType) =
+        "Bond {connectedAtom = "
+          ++ show (atomID atom)
+          ++ ", bondType = "
+          ++ show bondType
+          ++ "}"
+      showBond (Delocalised num atoms bondType) =
+        "Delocalised"
+
+prettyPrintCross :: Atom -> String
+prettyPrintCross atom = prettyPrintAtom 0 atom ++ concatMap (prettyPrintAtom 1) (getChildren atom)
 
 prettyPrintAtom :: Int -> Atom -> String
-prettyPrintAtom n atom = replicate (n*5) ' ' ++ show  (symbol $ atomicAttr atom) ++ show (atomID atom) ++ "\n" ++ concat (map (prettyPrintAtom (n+1)) (getChildren atom))
+prettyPrintAtom n atom = replicate (n*5) ' ' ++ show atom ++ "\n"
 
 getChildren :: Atom -> [Atom]
 getChildren atom = concatMap extractAtoms (bondList atom)

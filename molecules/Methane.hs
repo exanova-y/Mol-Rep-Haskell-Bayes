@@ -11,7 +11,7 @@ methane = carbonAtom
           , atomicNumber = 6
           , atomicWeight = 12.0107
           }
-      , coordinate = (0, 0, 0)
+      , coordinate = (0.0, 0.0, 0.0)
       , bondList =
           [ Bond { connectedAtom = hydrogenAtom1, bondType = CovalentBond {bondOrder = 1} }
           , Bond { connectedAtom = hydrogenAtom2, bondType = CovalentBond {bondOrder = 1} }
