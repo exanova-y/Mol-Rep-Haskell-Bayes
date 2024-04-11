@@ -5,21 +5,25 @@ module Molecule where
 
 import qualified Data.Vector as V
 import Control.Monad
-import Control.Monad.Bayes.Class
-import Control.Monad.Bayes.Sampler
-import Control.Monad.Bayes.Traced.Basic
-import Control.Monad.Bayes.Weighted
 import Data.List 
 import Data.Maybe
-import Numeric.Log( Log( Exp ), ln )
-import Data.Time.Format.ISO8601 (yearFormat)
+import LazyPPL
+import Text.Printf
+import Orbital
 
 data Atom = Atom {
     atomID                   :: Integer,
     atomicAttr               :: ElementAttributes, 
-    coordinate               :: (Double, Double, Double),
-    bondList                 :: [Bond]
+    coordinate               :: Coordinate,
+    bondList                 :: [Bond],
+    shells                   :: Shells
   }
+
+data Coordinate = Coordinate
+    { x :: Double
+    , y :: Double
+    , z :: Double
+    }
 
 data Bond = Delocalised {delocNum :: Integer, 
                            atoms :: [Atom], 
@@ -39,43 +43,49 @@ data ElementAttributes = ElementAttributes
     atomicWeight :: Double
   } deriving (Eq, Read, Show)
 
-newtype EquilibriumBondLength = Angstrom Double deriving (Read, Show, Eq)
+type EquilibriumBondLength = Angstrom
+newtype Angstrom = Angstrom Double deriving (Read, Show, Eq)
 
+
+getX :: Atom -> Double
+getX atom = x (coordinate atom)
+
+getY :: Atom -> Double
+getY atom = y (coordinate atom)
+
+getZ :: Atom -> Double
+getZ atom = z (coordinate atom)
 
 
 instance Show Atom where
-  show atom =
-    "atomID: "
-      ++ show (atomID atom)
-      ++ ", atomicAttr = "
-      ++ show (symbol $ atomicAttr atom)
-      ++ ", coordinate = "
-      ++ show (coordinate atom)
-      ++ ", bondList = ["
-      ++ showBonds (bondList atom)
-      ++ "]}"
-    where
-      showBonds [] = ""
-      showBonds [bond] = showBond bond
-      showBonds (bond : bonds) = showBond bond ++ ", " ++ showBonds bonds
-      
-      showBond (Bond atom bondType) =
-        "Bond {connectedAtom = "
-          ++ show (atomID atom)
-          ++ ", bondType = "
-          ++ show bondType
-          ++ "}"
-      showBond (Delocalised num atoms bondType) =
-        "Delocalised"
+    show atom = showAtom atom 0
 
-prettyPrintCross :: Atom -> String
-prettyPrintCross atom = prettyPrintAtom 0 atom ++ concatMap (prettyPrintAtom 1) (getChildren atom)
+showAtom :: Atom -> Int -> String
+showAtom atom indent =
+    let indentStr = replicate indent ' '
+        atomStr = show (symbol (atomicAttr atom)) ++ " with position (" ++ showCoord (x $ coordinate atom) ++ "," ++ showCoord (y $ coordinate atom) ++ "," ++ showCoord (z $ coordinate atom) ++ ")"
+        bondListStr = concatMap (showBond indent) (bondList atom)
+    in indentStr ++ atomStr ++ " has " ++ show (length (bondList atom)) ++ " children\n" ++ bondListStr
 
-prettyPrintAtom :: Int -> Atom -> String
-prettyPrintAtom n atom = replicate (n*5) ' ' ++ show atom ++ "\n"
+showCoord :: Double -> String
+showCoord coord = printf "%.3f" coord
 
-getChildren :: Atom -> [Atom]
-getChildren atom = concatMap extractAtoms (bondList atom)
-  where
-    extractAtoms (Delocalised _ atoms _) = atoms
-    extractAtoms (Bond connectedAtom _)  = [connectedAtom]
+showBond :: Int -> Bond -> String
+showBond indent (Bond atom bondType) =
+    let indentStr = replicate (indent + 4) ' '
+        atomStr = show (symbol (atomicAttr atom)) ++ " with position (" ++ showCoord (x $ coordinate atom) ++ "," ++ showCoord (y $ coordinate atom) ++ "," ++ showCoord (z $ coordinate atom) ++ ")"
+        bondOrderStr = case bondType of
+            CovalentBond order -> " with bondOrder " ++ show order
+            _ -> ""
+    in indentStr ++ atomStr ++ bondOrderStr ++ "\n"
+showBond _ (Delocalised _ _ _) = ""
+
+getCoordinates :: Atom -> (Coordinate, [Coordinate])
+getCoordinates atom =
+    let coord = coordinate atom
+        childCoords = map getChildCoordinate (bondList atom)
+    in (coord, childCoords)
+
+getChildCoordinate :: Bond -> Coordinate
+getChildCoordinate (Bond childAtom _) = coordinate childAtom
+getChildCoordinate (Delocalised _ childAtoms _) = coordinate (head childAtoms)

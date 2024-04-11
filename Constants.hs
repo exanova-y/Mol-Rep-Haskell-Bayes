@@ -4,6 +4,7 @@ module Constants where
 
 import Molecule
 import qualified Data.Vector as V
+import LazyPPL
 
 -- Takes the bond order and two atomic symbols and gives the equilibrium bond length between them.
 -- Currently this is only working for covalent single bonds.
@@ -154,9 +155,9 @@ getMaxBondsSymbol symbol =
 -- -- Fe (Iron): 0.001
 
 elementAttributes :: AtomicSymbol -> ElementAttributes
-elementAttributes O = ElementAttributes O 8 15.999 
-elementAttributes H = ElementAttributes H 1 1.008 
-elementAttributes N = ElementAttributes N 7 14.007
-elementAttributes C = ElementAttributes C 6 12.011
-elementAttributes B = ElementAttributes B 5 10.811  
-elementAttributes Fe = ElementAttributes Fe 26 55.845
+elementAttributes O = (ElementAttributes O 8 15.999 )
+elementAttributes H = (ElementAttributes H 1 1.008 )
+elementAttributes N = (ElementAttributes N 7 14.007)
+elementAttributes C = (ElementAttributes C 6 12.011)
+elementAttributes B = (ElementAttributes B 5 10.811  )
+elementAttributes Fe =( ElementAttributes Fe 26 55.845)
