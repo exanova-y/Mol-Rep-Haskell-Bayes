@@ -2,6 +2,8 @@ module Orbital where
 
 import Distr 
 import LazyPPL
+import Data.Maybe
+import Coordinate
 
 -- Orbital types for each subshell
 data S = S deriving (Show, Eq)
@@ -13,6 +15,7 @@ data F = Fxxx | Fxxy | Fxxz | Fxyy | Fxyz | Fxzz | Fzzz deriving (Show, Eq)
 data Orbital subshellType = Orbital
   { orbitalType :: subshellType
   , electronCount :: Int
+  , orientation :: Maybe Coordinate
   } deriving (Show, Eq)
 
 -- Each SubShell consists of a list of Orbitals.
@@ -58,12 +61,12 @@ instance SubShellType F where
   maxOrbitals :: SubShell F -> Int
   maxOrbitals _ = 7
 
-
+-- Hydrogen atom
 hydrogen :: Shells
 hydrogen =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital S 1]) -- 1s^1
+      , sSubShell = Just (SubShell [Orbital S 1 Nothing]) -- 1s^1
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
@@ -75,15 +78,15 @@ carbon :: Shells
 carbon =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital S 2]) -- 1s^2
+      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 1s^2
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital S 2]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 1, Orbital Py 1]) -- 2p^2, with one electron in each of two p orbitals
+      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 2s^2
+      , pSubShell = Just (SubShell [Orbital Px 1 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0))]) -- 2p^2, with one electron in each of two p orbitals
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
@@ -94,15 +97,15 @@ nitrogen :: Shells
 nitrogen =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital S 2]) -- 1s^2
+      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 1s^2
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital S 2]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 1, Orbital Py 1, Orbital Pz 1]) -- 2p^3
+      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 2s^2
+      , pSubShell = Just (SubShell [Orbital Px 1 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 1 (Just (Coordinate 0 0 1))]) -- 2p^3
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
@@ -113,15 +116,15 @@ oxygen :: Shells
 oxygen =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital S 2]) -- 1s^2
+      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 1s^2
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital S 2]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 2, Orbital Py 1, Orbital Pz 1]) -- 2p^4
+      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 2s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 1 (Just (Coordinate 0 0 1))]) -- 2p^4
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
@@ -132,15 +135,15 @@ boron :: Shells
 boron =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital S 2]) -- 1s^2
+      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 1s^2
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital S 2]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 1]) -- 2p^1
+      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 2s^2
+      , pSubShell = Just (SubShell [Orbital Px 1 (Just (Coordinate 1 0 0))]) -- 2p^1
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
@@ -151,97 +154,30 @@ iron :: Shells
 iron =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital S 2]) -- 1s^2
+      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 1s^2
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital S 2]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 2, Orbital Py 2, Orbital Pz 2]) -- 2p^6
+      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 2s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^6
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 3
-      , sSubShell = Just (SubShell [Orbital S 2]) -- 3s^2
-      , pSubShell = Just (SubShell [Orbital Px 2, Orbital Py 2, Orbital Pz 2]) -- 3p^6
-      , dSubShell = Just (SubShell [Orbital Dxy 1, Orbital Dyz 1, Orbital Dxz 1, Orbital Dx2y2 1, Orbital Dz2 1]) -- 3d^6
+      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 3s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 3p^6
+      , dSubShell = Just (SubShell [Orbital Dxy 1 (Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)), Orbital Dyz 1 (Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))), Orbital Dxz 1 (Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))), Orbital Dx2y2 1 (Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)), Orbital Dz2 1 (Just (Coordinate 0 0 1))]) -- 3d^6
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 4
-      , sSubShell = Just (SubShell [Orbital S 2]) -- 4s^2
+      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 4s^2
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
-
-
-
-bohrRadius = 
-
-
-
--- -- Constants
--- a0 :: Double -- Bohr radius
--- a0 = 1.0
-
--- psiNs :: Int -> Double -> Double
--- psiNs n r
---   | n == 1 = (1 / sqrt(pi * a0^3)) * exp (-r / a0)
---   | n == 2 = (1 / (4 * sqrt(2*pi * a0^3))) * (2 - r / a0) * exp (-r / (2* a0))
---   | otherwise = 0
-
-
--- psi2px :: Double -> Double -> Double
--- psi2px r cosTheta = (1 / (4 * sqrt(2*pi * a0^3))) * (r / a0) * exp (-r / (2* a0)) * cosTheta
-
--- psi2py :: Double -> Double -> Double
--- psi2py r cosTheta = (1 / (4 * sqrt(2*pi * a0^3))) * (r / a0) * exp (-r / (2* a0)) * cosTheta
-
--- psi2pz :: Double -> Double -> Double
--- psi2pz r cosTheta = (1 / (4 * sqrt(2*pi * a0^3))) * (r / a0) * exp (-r / (2* a0)) * cosTheta
-
--- -- Calculate the total number of electrons in a Shell
--- electronCountInShell :: Shell -> Int
--- electronCountInShell shell =
---   sum
---     [ maybe 0 (sum . map electronCount . orbitals) (sSubShell shell),
---       maybe 0 (sum . map electronCount . orbitals) (pSubShell shell),
---       maybe 0 (sum . map electronCount . orbitals) (dSubShell shell),
---       maybe 0 (sum . map electronCount . orbitals) (fSubShell shell)
---     ]
-
--- -- Calculate the distribution for an orbital based on its wave function
--- orbitalDistribution :: (Double -> Double) -> Int -> Prob Double
--- orbitalDistribution waveFunc electronCount =
---   do
---     r <- exponential 1
---     let prob = waveFunc r ^ 2 * r ^ 2
---     return (fromIntegral electronCount * prob)
-
--- -- Calculate the distribution for a p orbital based on its wave function
--- pOrbitalDistribution :: (Double -> Double -> Double) -> Int -> Prob Double
--- pOrbitalDistribution waveFunc electronCount =
---   do
---     r <- exponential 1
---     cosTheta <- uniformbounded (-1) 1
---     let prob = waveFunc r cosTheta ^ 2 * r ^ 2 * sin (acos cosTheta)
---     return (fromIntegral electronCount * prob)
-
--- -- Combine the distributions for each orbital type in a shell
--- shellDistribution :: Shell -> Prob Double
--- shellDistribution shell =
---   do
---     sDist <- maybe (return 0) (fmap sum . mapM (orbitalDistribution psi1s . electronCount) . orbitals) (sSubShell shell)
---     pDist <- maybe (return 0) (fmap sum . mapM (pOrbitalDistribution psi2px . electronCount) . orbitals) (pSubShell shell)
---     dDist <- maybe (return 0) (fmap sum . mapM (orbitalDistribution (const 0) . electronCount) . orbitals) (dSubShell shell)
---     fDist <- maybe (return 0) (fmap sum . mapM (orbitalDistribution (const 0) . electronCount) . orbitals) (fSubShell shell)
---     return (sDist + pDist + dDist + fDist)
-
--- -- Sum the distributions for all shells to create a distribution for the entire atom
--- atomDistribution :: Shells -> Prob Double
--- atomDistribution shells = fmap sum (mapM shellDistribution shells)

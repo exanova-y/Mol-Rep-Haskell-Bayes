@@ -8,6 +8,7 @@ import Data.List (sort)
 import LazyPPL
 import Distr
 import Extra
+import Coordinate
 import System.Random (RandomGen(next))
 
 crossMol :: Atom -> Meas Atom
@@ -45,27 +46,24 @@ appendAtoms n atom cmpAtom ids = do
 
 -- This takes an atom, a stream of IDs and returns the same atom with a bond to 
 -- a new atom, a boolean value indicating whether the max number of bonds has been 
--- reached for that atom and the remainder of the stream of IDs. It currently does not 
--- deal with Delocalised bonds that may have fractional bond orders.
+-- reached for that atom and the remainder of the stream of IDs.
 appendAtom :: Atom -> Atom -> [Integer] -> Meas (Atom, Bool, [Integer])
 appendAtom currentAtom compareAtom listIDs@(nextID:restIDs) = do
     let currentSymbol = symbol (atomicAttr currentAtom)
     let currentBondList = bondList currentAtom
-    if getMaxBonds currentAtom <= 0
+    if (length $ bondList currentAtom) - (fromIntegral $ getMaxBondsSymbol $ symbol $ atomicAttr currentAtom) <= 0
         then return (currentAtom, False, listIDs)
         else do
             nextSymbol <- sample $ uniformD [O, H, N, C, B, Fe]
             condition (nextSymbol == H)
-            bondOrder <- sample $ uniformD [1, 2, 3]
-            condition (bondOrder == 1)
-            let bondLength = equilibriumBondLengths bondOrder currentSymbol nextSymbol
+            let bondLength = equilibriumBondLengths 1 currentSymbol nextSymbol
             nextAtomCoordinate <- sampleNewPosition (coordinate currentAtom) bondLength
             let newAtom = Atom { atomID = nextID
                                , atomicAttr = elementAttributes nextSymbol
                                , coordinate = nextAtomCoordinate
-                               , bondList = [Bond {connectedAtom = currentAtom, bondType = CovalentBond {bondOrder = bondOrder}}]
+                               , bondList = [Bond {connectedAtom = currentAtom, bondType = CovalentBond}]
                                }
-            let updatedBondList = currentBondList ++ [Bond {connectedAtom = newAtom, bondType = CovalentBond {bondOrder = bondOrder}}]
+            let updatedBondList = currentBondList ++ [Bond {connectedAtom = newAtom, bondType = CovalentBond}]
             return (currentAtom { bondList = updatedBondList }, True, restIDs)
 appendAtom currentAtom compareAtom [] = return (currentAtom, False, [])
 

@@ -121,20 +121,6 @@ equilibriumBondLengths bondOrder symbol1 symbol2 =
         (3, Fe, Fe) -> Angstrom 2.26
         (_, _, _) -> undefined
 
-
--- This takes an atom and calculates how many more bonds it can have at most.
-getMaxBonds :: Atom -> Integer
-getMaxBonds atom = getMaxBondsSymbol (symbol $ atomicAttr atom) - sum (getBondOrders (bondList atom))
-
-getBondOrders :: [Bond] -> [Integer]
-getBondOrders bonds = map extractBondOrder bonds
-  where
-    extractBondOrder :: Bond -> Integer
-    extractBondOrder (Delocalised _ _ _) = undefined
-    extractBondOrder (Bond _ (CovalentBond order)) = order
-    extractBondOrder (Bond _ HydrogenBond) = 1
-    extractBondOrder (Bond _ IonicBond) = 1
-
 getMaxBondsSymbol :: AtomicSymbol -> Integer
 getMaxBondsSymbol symbol =
     case symbol of
@@ -155,9 +141,9 @@ getMaxBondsSymbol symbol =
 -- -- Fe (Iron): 0.001
 
 elementAttributes :: AtomicSymbol -> ElementAttributes
-elementAttributes O = (ElementAttributes O 8 15.999 )
-elementAttributes H = (ElementAttributes H 1 1.008 )
-elementAttributes N = (ElementAttributes N 7 14.007)
-elementAttributes C = (ElementAttributes C 6 12.011)
-elementAttributes B = (ElementAttributes B 5 10.811  )
-elementAttributes Fe =( ElementAttributes Fe 26 55.845)
+elementAttributes O  =  ElementAttributes O 8 15.999 
+elementAttributes H  =  ElementAttributes H 1 1.008 
+elementAttributes N  =  ElementAttributes N 7 14.007
+elementAttributes C  =  ElementAttributes C 6 12.011
+elementAttributes B  =  ElementAttributes B 5 10.811  
+elementAttributes Fe =  ElementAttributes Fe 26 55.845

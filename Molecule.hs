@@ -10,6 +10,7 @@ import Data.Maybe
 import LazyPPL
 import Text.Printf
 import Orbital
+import Coordinate
 
 data Atom = Atom {
     atomID                   :: Integer,
@@ -19,20 +20,11 @@ data Atom = Atom {
     shells                   :: Shells
   }
 
-data Coordinate = Coordinate
-    { x :: Double
-    , y :: Double
-    , z :: Double
-    }
-
-data Bond = Delocalised {delocNum :: Integer, 
-                           atoms :: [Atom], 
-                           bondType :: BondType}
-            | Bond {connectedAtom :: Atom, 
+data Bond = Bond {connectedAtom :: Atom, 
                     bondType :: BondType}
 
 data BondType = HydrogenBond 
-              | CovalentBond {bondOrder :: Integer}  
+              | CovalentBond 
               | IonicBond deriving (Eq, Read, Show)
 
 data AtomicSymbol = O | H | N | C | B | Fe deriving (Eq, Read, Show)
@@ -74,11 +66,7 @@ showBond :: Int -> Bond -> String
 showBond indent (Bond atom bondType) =
     let indentStr = replicate (indent + 4) ' '
         atomStr = show (symbol (atomicAttr atom)) ++ " with position (" ++ showCoord (x $ coordinate atom) ++ "," ++ showCoord (y $ coordinate atom) ++ "," ++ showCoord (z $ coordinate atom) ++ ")"
-        bondOrderStr = case bondType of
-            CovalentBond order -> " with bondOrder " ++ show order
-            _ -> ""
-    in indentStr ++ atomStr ++ bondOrderStr ++ "\n"
-showBond _ (Delocalised _ _ _) = ""
+    in indentStr ++ atomStr ++ "\n"
 
 getCoordinates :: Atom -> (Coordinate, [Coordinate])
 getCoordinates atom =
@@ -88,4 +76,3 @@ getCoordinates atom =
 
 getChildCoordinate :: Bond -> Coordinate
 getChildCoordinate (Bond childAtom _) = coordinate childAtom
-getChildCoordinate (Delocalised _ childAtoms _) = coordinate (head childAtoms)
