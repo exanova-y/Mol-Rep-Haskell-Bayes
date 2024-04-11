@@ -50,24 +50,30 @@ getZ atom = z (coordinate atom)
 
 
 instance Show Atom where
-    show atom = showAtom atom 0
+  show atom = showAtom atom 0
 
 showAtom :: Atom -> Int -> String
 showAtom atom indent =
-    let indentStr = replicate indent ' '
-        atomStr = show (symbol (atomicAttr atom)) ++ " with position (" ++ showCoord (x $ coordinate atom) ++ "," ++ showCoord (y $ coordinate atom) ++ "," ++ showCoord (z $ coordinate atom) ++ ")"
-        bondListStr = concatMap (showBond indent) (bondList atom)
-    in indentStr ++ atomStr ++ " has " ++ show (length (bondList atom)) ++ " children\n" ++ bondListStr
+  let indentStr = replicate indent ' '
+      atomStr = show (symbol (atomicAttr atom)) ++ " with position "
+             ++ showCoordinate (coordinate atom)
+      bondListStr = concatMap (showBond (indent + 2)) (bondList atom)
+  in indentStr ++ atomStr ++ " has " ++ show (length (bondList atom)) ++ " children\n" ++ bondListStr
+
+showCoordinate :: Coordinate -> String
+showCoordinate (Coordinate x y z) =
+  "(" ++ showCoord x ++ "," ++ showCoord y ++ "," ++ showCoord z ++ ")"
 
 showCoord :: Double -> String
 showCoord coord = printf "%.3f" coord
 
 showBond :: Int -> Bond -> String
 showBond indent (Bond atom bondType) =
-    let indentStr = replicate (indent + 4) ' '
-        atomStr = show (symbol (atomicAttr atom)) ++ " with position (" ++ showCoord (x $ coordinate atom) ++ "," ++ showCoord (y $ coordinate atom) ++ "," ++ showCoord (z $ coordinate atom) ++ ")"
-    in indentStr ++ atomStr ++ "\n"
-
+  let indentStr = replicate indent ' '
+      atomStr = show (symbol (atomicAttr atom)) ++ " with position "
+             ++ showCoordinate (coordinate atom)
+  in indentStr ++ atomStr ++ " has " ++ show (length (bondList atom)) ++ " children\n"
+  
 getCoordinates :: Atom -> (Coordinate, [Coordinate])
 getCoordinates atom =
     let coord = coordinate atom

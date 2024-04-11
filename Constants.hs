@@ -5,6 +5,7 @@ module Constants where
 import Molecule
 import qualified Data.Vector as V
 import LazyPPL
+import Orbital
 
 -- Takes the bond order and two atomic symbols and gives the equilibrium bond length between them.
 -- Currently this is only working for covalent single bonds.
@@ -147,3 +148,11 @@ elementAttributes N  =  ElementAttributes N 7 14.007
 elementAttributes C  =  ElementAttributes C 6 12.011
 elementAttributes B  =  ElementAttributes B 5 10.811  
 elementAttributes Fe =  ElementAttributes Fe 26 55.845
+
+elementShells :: AtomicSymbol -> Shells 
+elementShells O = oxygen
+elementShells H = hydrogen
+elementShells N = nitrogen
+elementShells C = carbon
+elementShells B = boron
+elementShells Fe = iron

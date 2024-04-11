@@ -10,6 +10,7 @@ import Distr
 import Extra
 import Coordinate
 import System.Random (RandomGen(next))
+import Data.ByteString (elem)
 
 crossMol :: Atom -> Meas Atom
 crossMol m = do
@@ -17,7 +18,6 @@ crossMol m = do
     (root, ids) <- initRoot [1..] m
     (updatedRoot, remainingIDs) <- appendAtoms (getMaxBondsSymbol (symbol $ atomicAttr m)) root m ids
     return updatedRoot
-
 
 initRoot :: [Integer] -> Atom -> Meas (Atom, [Integer])
 initRoot listIDs@(nextID:restIDs) m = do 
@@ -29,7 +29,7 @@ initRoot listIDs@(nextID:restIDs) m = do
     score (normalPdf (getY m) 0.01 yPos)
     zPos <- sample $ normal 0.0 1.0
     score (normalPdf (getZ m) 0.01 zPos)
-    return (Atom {atomID = nextID, atomicAttr = elementAttributes nextSymbol, coordinate = Coordinate {x = xPos, y = yPos, z = zPos}, bondList = []}, restIDs)
+    return (Atom {atomID = nextID, atomicAttr = elementAttributes nextSymbol, coordinate = Coordinate {x = xPos, y = yPos, z = zPos}, bondList = [], shells = elementShells nextSymbol}, restIDs)
 initRoot [] m = undefined
 
 
@@ -51,7 +51,7 @@ appendAtom :: Atom -> Atom -> [Integer] -> Meas (Atom, Bool, [Integer])
 appendAtom currentAtom compareAtom listIDs@(nextID:restIDs) = do
     let currentSymbol = symbol (atomicAttr currentAtom)
     let currentBondList = bondList currentAtom
-    if (length $ bondList currentAtom) - (fromIntegral $ getMaxBondsSymbol $ symbol $ atomicAttr currentAtom) <= 0
+    if abs ((length $ bondList currentAtom) - (fromIntegral $ getMaxBondsSymbol $ symbol $ atomicAttr currentAtom)) <= 0
         then return (currentAtom, False, listIDs)
         else do
             nextSymbol <- sample $ uniformD [O, H, N, C, B, Fe]
@@ -62,6 +62,7 @@ appendAtom currentAtom compareAtom listIDs@(nextID:restIDs) = do
                                , atomicAttr = elementAttributes nextSymbol
                                , coordinate = nextAtomCoordinate
                                , bondList = [Bond {connectedAtom = currentAtom, bondType = CovalentBond}]
+                               , shells = elementShells nextSymbol
                                }
             let updatedBondList = currentBondList ++ [Bond {connectedAtom = newAtom, bondType = CovalentBond}]
             return (currentAtom { bondList = updatedBondList }, True, restIDs)
