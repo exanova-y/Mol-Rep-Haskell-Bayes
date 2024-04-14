@@ -27,7 +27,7 @@ data BondType = HydrogenBond
               | CovalentBond 
               | IonicBond deriving (Eq, Read, Show)
 
-data AtomicSymbol = O | H | N | C | B | Fe deriving (Eq, Read, Show)
+data AtomicSymbol = O | H | N | C | B | Fe | F | Cl | S | Br | P | I deriving (Eq, Read, Show)
 
 data ElementAttributes = ElementAttributes
   { symbol :: AtomicSymbol,
@@ -55,7 +55,7 @@ instance Show Atom where
 showAtom :: Atom -> Int -> String
 showAtom atom indent =
   let indentStr = replicate indent ' '
-      atomStr = show (symbol (atomicAttr atom)) ++ " with position "
+      atomStr = show (symbol (atomicAttr atom)) ++ " with ID: " ++ (show (atomID atom)) ++ " with position "
              ++ showCoordinate (coordinate atom)
       bondListStr = concatMap (showBond (indent + 2)) (bondList atom)
   in indentStr ++ atomStr ++ " has " ++ show (length (bondList atom)) ++ " children\n" ++ bondListStr
@@ -70,7 +70,7 @@ showCoord coord = printf "%.3f" coord
 showBond :: Int -> Bond -> String
 showBond indent (Bond atom bondType) =
   let indentStr = replicate indent ' '
-      atomStr = show (symbol (atomicAttr atom)) ++ " with position "
+      atomStr = show (symbol (atomicAttr atom)) ++ " with ID: " ++ (show (atomID atom)) ++ " with position "
              ++ showCoordinate (coordinate atom)
   in indentStr ++ atomStr ++ " has " ++ show (length (bondList atom)) ++ " children\n"
   

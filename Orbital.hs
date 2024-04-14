@@ -6,7 +6,7 @@ import Data.Maybe
 import Coordinate
 
 -- Orbital types for each subshell
-data S = S deriving (Show, Eq)
+data So = So deriving (Show, Eq)
 data P = Px | Py | Pz deriving (Show, Eq)
 data D = Dxy | Dyz | Dxz | Dx2y2 | Dz2 deriving (Show, Eq)
 data F = Fxxx | Fxxy | Fxxz | Fxyy | Fxyz | Fxzz | Fzzz deriving (Show, Eq)
@@ -28,7 +28,7 @@ newtype SubShell subshellType = SubShell
 -- Each Shell has a principal quantum number and consists of a list of SubShells.
 data Shell = Shell
   { principalQuantumNumber :: Int
-  , sSubShell :: Maybe (SubShell S)
+  , sSubShell :: Maybe (SubShell So)
   , pSubShell :: Maybe (SubShell P)
   , dSubShell :: Maybe (SubShell D)
   , fSubShell :: Maybe (SubShell F)
@@ -45,8 +45,8 @@ class SubShellType subshellType where
   -- Function to get the maximum number of orbitals for a subshell type
   maxOrbitals :: SubShell subshellType -> Int
 
-instance SubShellType S where
-  maxOrbitals :: SubShell S -> Int
+instance SubShellType So where
+  maxOrbitals :: SubShell So -> Int
   maxOrbitals _ = 1
 
 instance SubShellType P where
@@ -66,7 +66,7 @@ hydrogen :: Shells
 hydrogen =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital S 1 Nothing]) -- 1s^1
+      , sSubShell = Just (SubShell [Orbital So 1 Nothing]) -- 1s^1
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
@@ -78,14 +78,14 @@ carbon :: Shells
 carbon =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 2s^2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
       , pSubShell = Just (SubShell [Orbital Px 1 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0))]) -- 2p^2, with one electron in each of two p orbitals
       , dSubShell = Nothing
       , fSubShell = Nothing
@@ -97,14 +97,14 @@ nitrogen :: Shells
 nitrogen =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 2s^2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
       , pSubShell = Just (SubShell [Orbital Px 1 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 1 (Just (Coordinate 0 0 1))]) -- 2p^3
       , dSubShell = Nothing
       , fSubShell = Nothing
@@ -116,14 +116,14 @@ oxygen :: Shells
 oxygen =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 2s^2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
       , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 1 (Just (Coordinate 0 0 1))]) -- 2p^4
       , dSubShell = Nothing
       , fSubShell = Nothing
@@ -135,14 +135,14 @@ boron :: Shells
 boron =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 2s^2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
       , pSubShell = Just (SubShell [Orbital Px 1 (Just (Coordinate 1 0 0))]) -- 2p^1
       , dSubShell = Nothing
       , fSubShell = Nothing
@@ -154,30 +154,202 @@ iron :: Shells
 iron =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 2s^2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
       , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^6
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 3
-      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 3s^2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 3s^2
       , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 3p^6
       , dSubShell = Just (SubShell [Orbital Dxy 1 (Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)), Orbital Dyz 1 (Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))), Orbital Dxz 1 (Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))), Orbital Dx2y2 1 (Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)), Orbital Dz2 1 (Just (Coordinate 0 0 1))]) -- 3d^6
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 4
-      , sSubShell = Just (SubShell [Orbital S 2 Nothing]) -- 4s^2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 4s^2
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
+
+chlorine :: Shells
+chlorine =
+  [ Shell
+      { principalQuantumNumber = 1
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , pSubShell = Nothing
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^5
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 3
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 3s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 3p^5
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  ]
+
+fluorine :: Shells
+fluorine =
+  [ Shell
+      { principalQuantumNumber = 1
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , pSubShell = Nothing
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 1 (Just (Coordinate 0 0 1))]) -- 2p^5
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  ]
+
+sulfur :: Shells
+sulfur =
+  [ Shell
+      { principalQuantumNumber = 1
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , pSubShell = Nothing
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^6
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 3
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 3s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 1 (Just (Coordinate 0 0 1))]) -- 3p^4
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  ]
+
+bromine :: Shells
+bromine =
+  [ Shell
+      { principalQuantumNumber = 1
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , pSubShell = Nothing
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^6
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 3
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 3s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 3p^6
+      , dSubShell = Just (SubShell [Orbital Dxy 2 (Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)), Orbital Dyz 2 (Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))), Orbital Dxz 2 (Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))), Orbital Dx2y2 2 (Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)), Orbital Dz2 2 (Just (Coordinate 0 0 1))]) -- 3d^10
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 4
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 4s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 0 Nothing]) -- 4p^5
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  ]
+
+phosphorus :: Shells
+phosphorus =
+  [ Shell
+      { principalQuantumNumber = 1
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , pSubShell = Nothing
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^6
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 3
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 3s^2
+      , pSubShell = Just (SubShell [Orbital Px 1 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 1 (Just (Coordinate 0 0 1))]) -- 3p^3
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  ]
+
+iodine :: Shells
+iodine =
+  [ Shell
+      { principalQuantumNumber = 1
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , pSubShell = Nothing
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 2
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^6
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 3
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 3s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 3p^6
+      , dSubShell = Just (SubShell [Orbital Dxy 2 (Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)), Orbital Dyz 2 (Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))), Orbital Dxz 2 (Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))), Orbital Dx2y2 2 (Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)), Orbital Dz2 2 (Just (Coordinate 0 0 1))]) -- 3d^10
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 4
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 4s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 4p^6
+      , dSubShell = Just (SubShell [Orbital Dxy 2 (Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)), Orbital Dyz 2 (Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))), Orbital Dxz 2 (Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))), Orbital Dx2y2 2 (Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)), Orbital Dz2 2 (Just (Coordinate 0 0 1))]) -- 4d^10
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 5
+      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 5s^2
+      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 0 Nothing]) -- 5p^5
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  ]
+
+
+
+
+
+
+
+

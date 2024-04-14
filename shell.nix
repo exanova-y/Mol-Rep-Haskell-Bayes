@@ -5,6 +5,7 @@ let
                 p.monad-extras
                 p.log-domain
                 p.statistics
+		p.megaparsec
               ]);
 in
 pkgs.mkShell {

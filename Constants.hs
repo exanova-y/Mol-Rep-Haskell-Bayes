@@ -122,32 +122,36 @@ equilibriumBondLengths bondOrder symbol1 symbol2 =
         (3, Fe, Fe) -> Angstrom 2.26
         (_, _, _) -> undefined
 
-getMaxBondsSymbol :: AtomicSymbol -> Integer
-getMaxBondsSymbol symbol =
-    case symbol of
-        O  -> 2
-        H  -> 1
-        N  -> 3
-        C  -> 4
-        B  -> 3
-        Fe -> 6
 
--- priorAbundances :: V.Vector Double
--- priorAbundances = V.fromList $ take 6 $ repeat (1.0/6.0)
--- -- O (Oxygen): 0.49
--- -- H (Hydrogen): 0.26
--- -- N (Nitrogen): 0.03
--- -- C (Carbon): 0.01
--- -- B (Boron): 0.002
--- -- Fe (Iron): 0.001
+
+getMaxBondsSymbol :: AtomicSymbol -> Integer
+getMaxBondsSymbol symbol = case symbol of
+  O -> 2
+  H -> 1
+  N -> 3
+  C -> 4
+  B -> 3
+  Fe -> 6
+  F -> 1
+  Cl -> 1
+  S -> 6
+  Br -> 1
+  P -> 5
+  I -> 1 -- Added case for iodine
 
 elementAttributes :: AtomicSymbol -> ElementAttributes
-elementAttributes O  =  ElementAttributes O 8 15.999 
-elementAttributes H  =  ElementAttributes H 1 1.008 
-elementAttributes N  =  ElementAttributes N 7 14.007
-elementAttributes C  =  ElementAttributes C 6 12.011
-elementAttributes B  =  ElementAttributes B 5 10.811  
-elementAttributes Fe =  ElementAttributes Fe 26 55.845
+elementAttributes O = ElementAttributes O 8 15.999
+elementAttributes H = ElementAttributes H 1 1.008
+elementAttributes N = ElementAttributes N 7 14.007
+elementAttributes C = ElementAttributes C 6 12.011
+elementAttributes B = ElementAttributes B 5 10.811
+elementAttributes Fe = ElementAttributes Fe 26 55.845
+elementAttributes F = ElementAttributes F 9 18.998
+elementAttributes Cl = ElementAttributes Cl 17 35.453
+elementAttributes S = ElementAttributes S 16 32.065
+elementAttributes Br = ElementAttributes Br 35 79.904
+elementAttributes P = ElementAttributes P 15 30.974
+elementAttributes I = ElementAttributes I 53 126.904 -- Added case for iodine
 
 elementShells :: AtomicSymbol -> Shells 
 elementShells O = oxygen
@@ -156,3 +160,9 @@ elementShells N = nitrogen
 elementShells C = carbon
 elementShells B = boron
 elementShells Fe = iron
+elementShells F = fluorine
+elementShells Cl = chlorine
+elementShells S = sulfur
+elementShells Br = bromine -- Added case for bromine
+elementShells P = phosphorus -- Added case for phosphorus
+elementShells I = iodine -- Added case for iodine
