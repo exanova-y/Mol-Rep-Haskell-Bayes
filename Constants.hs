@@ -6,6 +6,8 @@ import Molecule
 import qualified Data.Vector as V
 import LazyPPL
 import Orbital
+import Data.Array
+import Data.Maybe
 
 -- Takes the bond order and two atomic symbols and gives the equilibrium bond length between them.
 -- Currently this is only working for covalent single bonds.
@@ -123,21 +125,39 @@ equilibriumBondLengths bondOrder symbol1 symbol2 =
         (_, _, _) -> undefined
 
 
+getMaxBonds :: Molecule -> Integer -> Maybe Integer
+getMaxBonds molecule atomID = do
+  atom <- findAtom molecule atomID
+  maxBonds <- getMaxBondsSymbol (symbol $ atomicAttr atom)
+  bondOrders <- getBondOrders molecule atomID
+  return (maxBonds - bondOrders)
 
-getMaxBondsSymbol :: AtomicSymbol -> Integer
-getMaxBondsSymbol symbol = case symbol of
-  O -> 2
-  H -> 1
-  N -> 3
-  C -> 4
-  B -> 3
-  Fe -> 6
-  F -> 1
-  Cl -> 1
-  S -> 6
-  Br -> 1
-  P -> 5
-  I -> 1 -- Added case for iodine
+getBondOrders :: Molecule -> Integer -> Maybe Integer
+getBondOrders molecule atomID = do
+  connectedAtoms <- getConnectedAtoms molecule atomID
+  let bondOrders = map (extractBondOrder . fromJust . getBondType molecule atomID) connectedAtoms
+  return (sum bondOrders)
+
+extractBondOrder :: BondType -> Integer
+extractBondOrder (CovalentBond delocNum (Just _)) = 0
+extractBondOrder (CovalentBond delocNum Nothing) = delocNum `div` 2
+extractBondOrder _ = 1
+
+getMaxBondsSymbol :: AtomicSymbol -> Maybe Integer
+getMaxBondsSymbol symbol =
+  case symbol of
+    H -> Just 1
+    C -> Just 4
+    N -> Just 3
+    O -> Just 2
+    F -> Just 1
+    P -> Just 5
+    S -> Just 6
+    Cl -> Just 1
+    Br -> Just 1
+    B -> Just 3
+    Fe -> Just 6
+    I -> Just 1
 
 elementAttributes :: AtomicSymbol -> ElementAttributes
 elementAttributes O = ElementAttributes O 8 15.999

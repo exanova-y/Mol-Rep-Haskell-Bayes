@@ -1,10 +1,16 @@
 module Extra where 
 import LazyPPL
+import Control.Monad
 
 uniformBounded :: Double -> Double -> Prob Double
 uniformBounded lower upper = do
   x <- uniform
   return $ (upper - lower) * x + lower
+
+superuniformbounded n a b = do
+   xs <- replicateM n uniform
+   let x = sum xs
+   return $ x * (b - a) + a
 
 uniformDiscrete :: Int -> Prob Int
 uniformDiscrete n =

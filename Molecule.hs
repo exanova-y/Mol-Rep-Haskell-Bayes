@@ -1,8 +1,9 @@
 
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FunctionalDependencies #-}
 
 module Molecule where
-
+import Control.Applicative (Alternative((<|>)))
 import qualified Data.Vector as V
 import Control.Monad
 import Data.List 
@@ -11,20 +12,26 @@ import LazyPPL
 import Text.Printf
 import Orbital
 import Coordinate
+import Data.Array
+import Data.Maybe
+
+data Molecule = Molecule {
+    atoms :: [Atom],
+    bonds :: Array (Int, Int) (Maybe BondType)
+  }
 
 data Atom = Atom {
     atomID                   :: Integer,
     atomicAttr               :: ElementAttributes, 
     coordinate               :: Coordinate,
-    bondList                 :: [Bond],
     shells                   :: Shells
-  }
+  } deriving (Show, Read)
 
-data Bond = Bond {connectedAtom :: Atom, 
+data Bond = Bond {connectedAtomID :: Integer, 
                     bondType :: BondType}
 
 data BondType = HydrogenBond 
-              | CovalentBond 
+              | CovalentBond {delocNum :: Integer, ring :: Maybe [Integer]}
               | IonicBond deriving (Eq, Read, Show)
 
 data AtomicSymbol = O | H | N | C | B | Fe | F | Cl | S | Br | P | I deriving (Eq, Read, Show)
@@ -38,6 +45,9 @@ data ElementAttributes = ElementAttributes
 type EquilibriumBondLength = Angstrom
 newtype Angstrom = Angstrom Double deriving (Read, Show, Eq)
 
+instance Eq Atom where
+    (==) a1 a2 = atomID a1 == atomID a2
+
 
 getX :: Atom -> Double
 getX atom = x (coordinate atom)
@@ -49,36 +59,44 @@ getZ :: Atom -> Double
 getZ atom = z (coordinate atom)
 
 
-instance Show Atom where
-  show atom = showAtom atom 0
+getConnectedAtoms :: Molecule -> Integer -> Maybe [Integer]
+getConnectedAtoms molecule atomID =
+  let connectedAtoms = [fromIntegral j | (i, j) <- range (bounds (bonds molecule)), i == fromIntegral atomID, isJust (bonds molecule ! (i, j))]
+  in if null connectedAtoms then Nothing else Just connectedAtoms
 
-showAtom :: Atom -> Int -> String
-showAtom atom indent =
-  let indentStr = replicate indent ' '
-      atomStr = show (symbol (atomicAttr atom)) ++ " with ID: " ++ (show (atomID atom)) ++ " with position "
-             ++ showCoordinate (coordinate atom)
-      bondListStr = concatMap (showBond (indent + 2)) (bondList atom)
-  in indentStr ++ atomStr ++ " has " ++ show (length (bondList atom)) ++ " children\n" ++ bondListStr
+findAtom :: Molecule -> Integer -> Maybe Atom
+findAtom mol atomId = find (\atom -> atomID atom == atomId) (atoms mol)
 
-showCoordinate :: Coordinate -> String
-showCoordinate (Coordinate x y z) =
-  "(" ++ showCoord x ++ "," ++ showCoord y ++ "," ++ showCoord z ++ ")"
+getBondType :: Molecule -> Integer -> Integer -> Maybe BondType
+getBondType molecule atomID otherAtomID =
+  bonds molecule ! (fromIntegral atomID, fromIntegral otherAtomID)
 
-showCoord :: Double -> String
-showCoord coord = printf "%.3f" coord
+setBondType :: Molecule -> Integer -> Integer -> BondType -> Molecule
+setBondType molecule atomID otherAtomID bondType =
+    molecule { bonds = bonds molecule // [((fromIntegral atomID, fromIntegral otherAtomID), Just bondType),
+                                          ((fromIntegral otherAtomID, fromIntegral atomID), Just bondType)] }
 
-showBond :: Int -> Bond -> String
-showBond indent (Bond atom bondType) =
-  let indentStr = replicate indent ' '
-      atomStr = show (symbol (atomicAttr atom)) ++ " with ID: " ++ (show (atomID atom)) ++ " with position "
-             ++ showCoordinate (coordinate atom)
-  in indentStr ++ atomStr ++ " has " ++ show (length (bondList atom)) ++ " children\n"
-  
-getCoordinates :: Atom -> (Coordinate, [Coordinate])
-getCoordinates atom =
-    let coord = coordinate atom
-        childCoords = map getChildCoordinate (bondList atom)
-    in (coord, childCoords)
 
-getChildCoordinate :: Bond -> Coordinate
-getChildCoordinate (Bond childAtom _) = coordinate childAtom
+
+prettyPrintMolecule :: Molecule -> String
+prettyPrintMolecule molecule =
+    "Atoms:\n" ++
+    concatMap prettyPrintAtom (atoms molecule) ++
+    "\nBonds:\n" ++
+    prettyPrintBondMatrix molecule
+  where
+    prettyPrintAtom :: Atom -> String
+    prettyPrintAtom atom =
+        printf "%s %d at (%.2f, %.2f, %.2f)\n"
+            (show (symbol (atomicAttr atom)))
+            (atomID atom)
+            (getX atom)
+            (getY atom)
+            (getZ atom)
+
+    prettyPrintBondMatrix :: Molecule -> String
+    prettyPrintBondMatrix molecule =
+        unlines $
+        map (\i -> concatMap (\j -> printf "%d " (if isJust (bonds molecule ! (i, j)) then 1 else 0 :: Int)) [1..numAtoms]) [1..numAtoms]
+      where
+        numAtoms = length (atoms molecule)

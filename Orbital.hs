@@ -6,24 +6,24 @@ import Data.Maybe
 import Coordinate
 
 -- Orbital types for each subshell
-data So = So deriving (Show, Eq)
-data P = Px | Py | Pz deriving (Show, Eq)
-data D = Dxy | Dyz | Dxz | Dx2y2 | Dz2 deriving (Show, Eq)
-data F = Fxxx | Fxxy | Fxxz | Fxyy | Fxyz | Fxzz | Fzzz deriving (Show, Eq)
+data So = So deriving (Show, Eq, Read)
+data P = Px | Py | Pz deriving (Show, Eq, Read)
+data D = Dxy | Dyz | Dxz | Dx2y2 | Dz2 deriving (Show, Eq, Read)
+data F = Fxxx | Fxxy | Fxxz | Fxyy | Fxyz | Fxzz | Fzzz deriving (Show, Eq, Read)
 
 -- The Orbital has a type and a number of electrons.
 data Orbital subshellType = Orbital
   { orbitalType :: subshellType
   , electronCount :: Int
   , orientation :: Maybe Coordinate
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Read)
 
 -- Each SubShell consists of a list of Orbitals.
 -- We ensure that all orbitals within a subshell are of the same type
 -- by using the subshellType parameter.
 newtype SubShell subshellType = SubShell
   { orbitals :: [Orbital subshellType]
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Read)
 
 -- Each Shell has a principal quantum number and consists of a list of SubShells.
 data Shell = Shell
@@ -32,7 +32,7 @@ data Shell = Shell
   , pSubShell :: Maybe (SubShell P)
   , dSubShell :: Maybe (SubShell D)
   , fSubShell :: Maybe (SubShell F)
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Read)
 
 -- An Atom consists of a list of Shells.
 type Shells = [Shell]

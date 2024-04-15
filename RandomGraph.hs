@@ -1,0 +1,76 @@
+
+module RandomGraph where
+import Molecule
+import LazyPPL
+import Distr
+import Constants
+import Coordinate
+import Control.Monad
+import Data.Maybe
+import Extra
+import Data.Array
+
+sampleMolecule :: Int -> Meas Molecule
+sampleMolecule numAtoms = do
+  let atomIDs = [1..numAtoms]
+  let bondMatrix = array ((1,1), (numAtoms, numAtoms)) [((i,j), Nothing) | i <- atomIDs, j <- atomIDs]
+  atoms <- foldM (\atoms' atomID -> do
+    newAtom <- sampleAtom atomID (Molecule atoms' bondMatrix)
+    return (newAtom : atoms')) [] atomIDs
+  let molecule = Molecule (reverse atoms) bondMatrix
+  foldM updateBondMatrix molecule atoms
+
+updateBondMatrix :: Molecule -> Atom -> Meas Molecule
+updateBondMatrix molecule newAtom = do
+  let newAtomID = atomID newAtom
+  let existingAtoms = atoms molecule
+  updatedMolecule <- foldM (\mol existingAtom -> do
+    let existingAtomID = atomID existingAtom
+    shouldBond <- sample $ bernoulli 0.2 -- Adjust the probability as needed
+    if shouldBond
+      then do
+        delocNum <- sample $ uniformD [2, 4, 6]
+        let bondType = CovalentBond delocNum Nothing
+        let updatedBonds = bonds mol // [((fromIntegral newAtomID,fromIntegral  existingAtomID), Just bondType), ((fromIntegral existingAtomID,fromIntegral  newAtomID), Just bondType)]
+        return mol {bonds = updatedBonds}
+      else return mol) molecule existingAtoms
+  return updatedMolecule
+
+
+sampleAtom :: Int -> Molecule -> Meas Atom
+sampleAtom atomID mol = do
+  symbol <- sample $ uniformD [O, H, N, C, B, Fe, F, Cl, S, Br, P, I]
+  let attr = elementAttributes symbol
+  let shellsVar = elementShells symbol
+  coord <- if atomID == 1
+    then do
+      x <- sample $ normal 0 1
+      y <- sample $ normal 0 1
+      z <- sample $ normal 0 1
+      return $ Coordinate x y z
+    else do
+      let prevAtomID = atomID - 1
+      let prevAtom = fromJust $ findAtom mol (fromIntegral prevAtomID)
+      bondLength <- sample $ normal 1.5 0.5
+      let angstromBondLength = Angstrom bondLength
+      sampleNewPosition (coordinate prevAtom) angstromBondLength
+  return Atom {atomID = fromIntegral atomID, atomicAttr = attr, coordinate = coord, shells = shellsVar}
+  
+-- Calculate the Euclidean distance between two coordinates.
+euclideanDistance :: Coordinate -> Coordinate -> Double
+euclideanDistance (Coordinate x1 y1 z1) (Coordinate x2 y2 z2) =
+  sqrt $ (x1-x2)^2 + (y1-y2)^2 + (z1-z2)^2
+
+
+
+
+-- Sample a new position for an atom based on the previous position and bond length.
+sampleNewPosition :: Coordinate -> EquilibriumBondLength -> Meas Coordinate
+sampleNewPosition coord (Angstrom bondLength) = do
+  theta <- sample $ uniformbounded 0 (2 * pi)
+  u <- sample $ uniformbounded (-1) 1
+  let phi = acos u
+  let xPos = bondLength * sin phi * cos theta
+  let yPos = bondLength * sin phi * sin theta
+  let zPos = bondLength * cos phi
+  return Coordinate {x = x coord + xPos, y = y coord + yPos, z = z coord + zPos}
