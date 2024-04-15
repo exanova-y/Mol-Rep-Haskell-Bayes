@@ -1,6 +1,9 @@
 import System.Directory (listDirectory)
 import System.FilePath (takeExtension)
 import Text.Megaparsec
+import qualified Data.ByteString.Lazy as BL
+import qualified Data.Text.Encoding as TE
+import qualified Data.Text as T
 import Text.Megaparsec.Char
 import Data.Void
 import System.Directory
@@ -168,3 +171,99 @@ main = do
         mapM_ putStrLn (map show atoms)
         putStrLn $ "LogS: " ++ maybe "N/A" show logS
         putStrLn "") molecules
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+parseDB1Contents :: Parser ([Atom], Maybe Double)
+parseDB1Contents = do
+    -- Skip the header lines
+    void $ manyTill anySingle (try $ string "\n")
+    void $ manyTill anySingle (try $ string "\n")
+    void $ manyTill anySingle (try $ string "\n")
+    countLine <- manyTill anySingle (try $ string "\n")
+    let (atomCount, bondCount, _) = parseCountLine countLine
+    atoms <- zipWithM parseAtom [1..atomCount] (replicate atomCount ())
+    bondLines <- count bondCount (manyTill anySingle (try $ string "\n"))
+    let updatedAtoms = foldl updateAtomBonds atoms bondLines
+    -- Parse any additional lines until "> <logP>"
+    void $ manyTill anySingle (try $ string ">  <logP>")
+    -- Parse the logP value
+    logPValue <- optional $ do
+        void $ manyTill anySingle (try $ string "\n")
+        logPLine <- manyTill anySingle (try $ string "\n")
+        case runParser parseDouble "" logPLine of
+            Left _ -> fail "Invalid logP value"
+            Right value -> return value
+    -- Skip the remaining lines until "$$$$"
+    void $ manyTill anySingle (try $ string "$$$$\n")
+    return (updatedAtoms, logPValue)
+
+-- parseDB1File :: FilePath -> IO [(FilePath, ([Atom], Maybe Double))]
+-- parseDB1File filePath = do
+--     db1String <- readFile filePath
+--     let parsedMolecules = runParser (many parseDB1Molecule) filePath db1String
+--     case parsedMolecules of
+--         Left err -> do
+--             putStrLn $ "Error parsing file " ++ filePath ++ ": " ++ errorBundlePretty err
+--             return []
+--         Right molecules -> return molecules
+
+parseDB1File :: FilePath -> IO [(FilePath, ([Atom], Maybe Double))]
+parseDB1File filePath = do
+    db1ByteString <- BL.readFile filePath
+    let db1String = T.unpack (TE.decodeUtf8With (\_ _ -> Just '?') (BL.toStrict db1ByteString))
+    let parsedMolecules = runParser (many parseDB1Molecule) filePath db1String
+    case parsedMolecules of
+        Left err -> do
+            putStrLn $ "Error parsing file " ++ filePath ++ ": " ++ errorBundlePretty err
+            return []
+        Right molecules -> return molecules
+
+
+-- parseDB1File :: FilePath -> IO [(FilePath, ([Atom], Maybe Double))]
+-- parseDB1File filePath = do
+--     db1ByteString <- BL.readFile filePath
+--     let db1String = T.unpack (TE.decodeUtf8 (BL.toStrict db1ByteString))
+--     let parsedMolecules = runParser (many parseDB1Molecule) filePath db1String
+--     case parsedMolecules of
+--         Left err -> do
+--             putStrLn $ "Error parsing file " ++ filePath ++ ": " ++ errorBundlePretty err
+--             return []
+--         Right molecules -> return molecules
+
+
+parseDB1Molecule :: Parser (FilePath, ([Atom], Maybe Double))
+parseDB1Molecule = do
+    (atoms, logPValue) <- parseDB1Contents
+    molID <- parseMolID ""
+    return (molID, (atoms, logPValue))
+  where
+    parseMolID :: String -> Parser FilePath
+    parseMolID _ = return ""
+
+
+
+
+
+main2 :: IO ()
+main2 = do
+    let db1FilePath = "./sdfs/DB1.sdf"
+    db1Molecules <- parseDB1File db1FilePath
+    putStrLn $ "Parsed " ++ show (length db1Molecules) ++ " molecules from file: " ++ db1FilePath
+    -- mapM_ (\(molID, (atoms, logP)) -> do
+    --     putStrLn $ "Molecule ID: " ++ molID
+    --     putStrLn "Atoms:"
+    --     mapM_ putStrLn (map show atoms)
+    --     putStrLn $ "LogP: " ++ maybe "N/A" show logP
+    --     putStrLn "") db1Molecules
