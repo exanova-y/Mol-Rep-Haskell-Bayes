@@ -13,11 +13,11 @@ import Molecule
 import Constants
 import Orbital
 import Coordinate
-import Data.Array
+import qualified Data.Map as M
 
 type Parser = Parsec Void String
 
-processSDFDirectory :: FilePath -> IO [(FilePath, (Molecule, Maybe Double))]
+processSDFDirectory :: FilePath -> IO [(FilePath, (Molecule, Double))]
 processSDFDirectory dirPath = do
     contents <- listDirectory dirPath
     let sdfFiles = filter (\file -> takeExtension file == ".sdf") contents
@@ -30,7 +30,7 @@ processSDFDirectory dirPath = do
         case result of
             Left err -> do
                 putStrLn $ "Error parsing file " ++ filePath ++ ": " ++ errorBundlePretty err
-                return (Molecule [] (array ((1,1),(0,0)) []), Nothing)
+                return (Molecule [] M.empty, 0.0)
             Right moleculeAndDbl -> return moleculeAndDbl
 
 processSDFFile :: FilePath -> IO ()
@@ -43,7 +43,7 @@ processSDFFile filePath = do
 
 
 
-parseSDFFile :: FilePath -> IO (Either (ParseErrorBundle String Void) (Molecule, Maybe Double))
+parseSDFFile :: FilePath -> IO (Either (ParseErrorBundle String Void) (Molecule, Double))
 parseSDFFile filePath = do
     sdfString <- readFile filePath
     return $ runParser parseSDFContents filePath sdfString
@@ -58,9 +58,7 @@ parseSDFFile filePath = do
 
 
 
-
-
-parseSDFContents :: Parser (Molecule, Maybe Double)
+parseSDFContents :: Parser (Molecule, Double)
 parseSDFContents = do
     -- Skip the header lines
     manyTill anySingle (try $ string "\n")
@@ -71,22 +69,24 @@ parseSDFContents = do
     atoms <- zipWithM parseAtom [1..atomCount] (replicate atomCount ())
     bondLines <- count bondCount (manyTill anySingle (try $ string "\n"))
     let bondMatrix = buildBondMatrix atomCount bondLines
+
     -- Parse the "M END" line and any additional lines
     void $ manyTill anySingle (try $ string ">  <logS>\n")
-    logSValue <- optional $ do
+
+    -- Parse the logS value
+    logSValue <- try $ do
         logSLine <- manyTill anySingle (try $ string "\n")
         case reads logSLine of
             [(value, "")] -> return value
-            _             -> fail "Invalid logS value"
+            _ -> fail "Invalid logS value"
+
     -- Skip the remaining lines
     manyTill anySingle eof
     return (Molecule atoms bondMatrix, logSValue)
 
-
-buildBondMatrix :: Int -> [String] -> Array (Int, Int) (Maybe BondType)
+buildBondMatrix :: Int -> [String] -> M.Map (Integer, Integer) BondType
 buildBondMatrix atomCount bondLines =
-    array ((1,1),(atomCount,atomCount)) [((i,j), Nothing) | i <- [1..atomCount], j <- [1..atomCount]] //
-    map parseBondLine bondLines
+    M.fromList $ map parseBondLine bondLines
   where
     parseBondLine bondLine =
         case words bondLine of
@@ -99,7 +99,7 @@ buildBondMatrix atomCount bondLines =
                         2 -> CovalentBond {delocNum = 4, ring = Nothing}
                         3 -> CovalentBond {delocNum = 6, ring = Nothing}
                         _ -> error "Invalid bond order"
-                in ((atom1ID, atom2ID), Just bondType)
+                in ((atom1ID, atom2ID), bondType)
             _ -> error "Invalid bond line format"
 
 
@@ -168,12 +168,10 @@ makeAtom :: Int -> (AtomicSymbol, Coordinate) -> Atom
 makeAtom atomicID (symbol, coord) =
     Atom (fromIntegral $ atomicID) (elementAttributes symbol) coord (elementShells symbol)
 
-processAtoms :: FilePath -> (Molecule, Maybe Double) -> IO ()
+processAtoms :: FilePath -> (Molecule, Double) -> IO ()
 processAtoms filePath (molecule, logSValue) = do
     putStrLn $ "Parsed molecule from file: " ++ filePath
-    case logSValue of
-        Just value -> putStrLn $ "LogS value: " ++ show value
-        Nothing -> putStrLn "LogS value not found in file."
+    putStrLn $ "LogS value: " ++ show logSValue
     putStrLn "Parsed atoms:"
     mapM_ putStrLn (map show (atoms molecule))
 
@@ -186,7 +184,7 @@ main = do
     putStrLn "Parsed molecules and logS values:"
     mapM_ (\(molecule, logS) -> do
         putStrLn $ prettyPrintMolecule molecule
-        putStrLn $ "LogS: " ++ maybe "N/A" show logS
+        putStrLn $ "LogS: " ++ show logS
         putStrLn "") molecules
 
 
@@ -195,9 +193,7 @@ main = do
 
 
 
-
-
-parseDB1Contents :: Parser (Molecule, Maybe Double)
+parseDB1Contents :: Parser (Molecule, Double)
 parseDB1Contents = do
     -- Skip the header lines
     void $ manyTill anySingle (try $ string "\n")
@@ -208,20 +204,23 @@ parseDB1Contents = do
     atoms <- zipWithM parseAtom [1..atomCount] (replicate atomCount ())
     bondLines <- count bondCount (manyTill anySingle (try $ string "\n"))
     let bondMatrix = buildBondMatrix atomCount bondLines
-    -- Parse any additional lines until ">  <logP>"
+
+    -- Parse any additional lines until "> <logP>"
     void $ manyTill anySingle (try $ string ">  <logP>")
+
     -- Parse the logP value
-    logPValue <- optional $ do
+    logPValue <- try $ do
         void $ manyTill anySingle (try $ string "\n")
         logPLine <- manyTill anySingle (try $ string "\n")
         case runParser parseDouble "" logPLine of
             Left _ -> fail "Invalid logP value"
             Right value -> return value
+
     -- Skip the remaining lines until "$$$$"
     void $ manyTill anySingle (try $ string "$$$$\n")
     return (Molecule atoms bondMatrix, logPValue)
 
-parseDB1File :: FilePath -> IO [(FilePath, (Molecule, Maybe Double))]
+parseDB1File :: FilePath -> IO [(Molecule, Double)]
 parseDB1File filePath = do
     db1ByteString <- BL.readFile filePath
     let db1String = T.unpack (TE.decodeUtf8With (\_ _ -> Just '?') (BL.toStrict db1ByteString))
@@ -232,22 +231,17 @@ parseDB1File filePath = do
             return []
         Right molecules -> return molecules
 
-parseDB1Molecule :: Parser (FilePath, (Molecule, Maybe Double))
+parseDB1Molecule :: Parser (Molecule, Double)
 parseDB1Molecule = do
     (molecule, logPValue) <- parseDB1Contents
-    molID <- parseMolID ""
-    return (molID, (molecule, logPValue))
-  where
-    parseMolID :: String -> Parser FilePath
-    parseMolID _ = return ""
+    return (molecule, logPValue)
 
 main2 :: IO ()
 main2 = do
     let db1FilePath = "./logp/DB1.sdf"
     db1Molecules <- parseDB1File db1FilePath
     putStrLn $ "Parsed " ++ show (length db1Molecules) ++ " molecules from file: " ++ db1FilePath
-    mapM_ (\(molID, (molecule, logP)) -> do
-        putStrLn $ "Molecule ID: " ++ molID
+    mapM_ (\(molecule, logP) -> do
         putStrLn $ prettyPrintMolecule molecule
-        putStrLn $ "LogP: " ++ maybe "N/A" show logP
+        putStrLn $ "LogP: " ++ show logP
         putStrLn "") db1Molecules

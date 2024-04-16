@@ -11,11 +11,12 @@ import Control.Monad
 import Data.Maybe
 import Extra
 import Data.Array
+import qualified Data.Map as M
 
 sampleMolecule :: Int -> Meas Molecule
 sampleMolecule numAtoms = do
   let atomIDs = [1..numAtoms]
-  let bondMatrix = array ((1,1), (numAtoms, numAtoms)) [((i,j), Nothing) | i <- atomIDs, j <- atomIDs]
+  let bondMatrix = M.empty
   atoms <- foldM (\atoms' atomID -> do
     newAtom <- sampleAtom atomID (Molecule atoms' bondMatrix)
     return (newAtom : atoms')) [] atomIDs
@@ -38,7 +39,9 @@ updateBondMatrix molecule newAtom = do
           then do
             delocNum <- sample $ uniformD [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 6]
             let bondType = CovalentBond delocNum Nothing
-            let updatedBonds = bonds mol // [((fromIntegral newAtomID,fromIntegral  existingAtomID), Just bondType), ((fromIntegral existingAtomID,fromIntegral  newAtomID), Just bondType)]
+            let updatedBonds :: M.Map (Integer, Integer) BondType
+                updatedBonds = M.insert (fromIntegral newAtomID, fromIntegral existingAtomID)  bondType $
+                                M.insert (fromIntegral existingAtomID, fromIntegral newAtomID) bondType (bonds mol)
             return mol {bonds = updatedBonds}
         else return mol) molecule existingAtoms
   return updatedMolecule

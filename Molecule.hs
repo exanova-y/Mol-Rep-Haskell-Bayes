@@ -5,6 +5,7 @@
 module Molecule where
 import Control.Applicative (Alternative((<|>)))
 import qualified Data.Vector as V
+import qualified Data.Map as M
 import Control.Monad
 import Data.List 
 import Data.Maybe
@@ -12,13 +13,12 @@ import LazyPPL
 import Text.Printf
 import Orbital
 import Coordinate
-import Data.Array
 import Data.Maybe
 
 data Molecule = Molecule {
     atoms :: [Atom],
-    bonds :: Array (Int, Int) (Maybe BondType)
-  }
+    bonds :: M.Map (Integer, Integer) BondType
+  } deriving (Show, Read)
 
 data Atom = Atom {
     atomID                   :: Integer,
@@ -61,34 +61,36 @@ getZ atom = z (coordinate atom)
 
 getConnectedAtoms :: Molecule -> Integer -> Maybe [Integer]
 getConnectedAtoms molecule atomID =
-  let connectedAtoms = [fromIntegral j | (i, j) <- range (bounds (bonds molecule)), i == fromIntegral atomID, isJust (bonds molecule ! (i, j))]
-  in if null connectedAtoms then Nothing else Just connectedAtoms
+    case [j | (i, j) <- M.keys (bonds molecule), i == fromIntegral atomID] of
+        [] -> Nothing
+        connectedAtoms -> Just connectedAtoms
 
 findAtom :: Molecule -> Integer -> Maybe Atom
 findAtom mol atomId = find (\atom -> atomID atom == atomId) (atoms mol)
 
 getBondTypeMaybe :: Molecule -> Integer -> Integer -> Maybe BondType
 getBondTypeMaybe molecule atomID otherAtomID =
-  bonds molecule ! (fromIntegral atomID, fromIntegral otherAtomID)
+    M.lookup (fromIntegral atomID, fromIntegral otherAtomID) (bonds molecule)
 
 getBondType :: Molecule -> Integer -> Integer -> BondType
-getBondType molecule atomID otherAtomID = case bonds molecule ! (fromIntegral atomID, fromIntegral otherAtomID) of
-  Just bondType -> bondType
-  Nothing -> error "Bond not found"
+getBondType molecule atomID otherAtomID =
+    case getBondTypeMaybe molecule atomID otherAtomID of
+        Just bondType -> bondType
+        Nothing       -> error "Bond not found"
 
 setBondType :: Molecule -> Integer -> Integer -> BondType -> Molecule
 setBondType molecule atomID otherAtomID bondType =
-    molecule { bonds = bonds molecule // [((fromIntegral atomID, fromIntegral otherAtomID), Just bondType),
-                                          ((fromIntegral otherAtomID, fromIntegral atomID), Just bondType)] }
-
-
+    let key1 = (fromIntegral atomID, fromIntegral otherAtomID)
+        key2 = (fromIntegral otherAtomID, fromIntegral atomID)
+        newBonds = M.insert key1 bondType $ M.insert key2 bondType (bonds molecule)
+    in  molecule { bonds = newBonds }
 
 prettyPrintMolecule :: Molecule -> String
 prettyPrintMolecule molecule = "Atoms:\n" ++ concatMap prettyPrintAtom (atoms molecule) ++ "\nBonds:\n" ++ prettyPrintBondMatrix molecule
   where
     prettyPrintAtom :: Atom -> String
     prettyPrintAtom atom =
-      printf "%s %d at (%.2f, %.2f, %.2f) with %d children\n%s\n"
+      printf "%s %d at (%.1f, %.1f, %.1f) with %d children\n%s\n"
         (show (symbol (atomicAttr atom)))
         (atomID atom)
         (getX atom)
@@ -108,10 +110,14 @@ prettyPrintMolecule molecule = "Atoms:\n" ++ concatMap prettyPrintAtom (atoms mo
         Nothing -> ""
 
     prettyPrintBondMatrix :: Molecule -> String
-    prettyPrintBondMatrix molecule = unlines $ map (\i -> concatMap (\j -> printf "%d " (getBondOrder i j)) [1..numAtoms]) [1..numAtoms]
+    prettyPrintBondMatrix molecule =
+        unlines $ map formatRow [1..numAtoms]
       where
         numAtoms = length (atoms molecule)
-        getBondOrder i j =
-          case getBondTypeMaybe molecule (toInteger i) (toInteger j) of
-            Just (CovalentBond delocNum _) -> delocNum
-            _ -> 0
+        formatRow i = concatMap (printf "%d ") [getBondOrder molecule i j | j <- [1..numAtoms]]
+
+getBondOrder :: Molecule -> Int -> Int -> Int
+getBondOrder molecule i j =
+    case M.lookup (toInteger i, toInteger j) (bonds molecule) of
+        Just (CovalentBond delocNum _) -> fromIntegral delocNum
+        _                              -> 0
