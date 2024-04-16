@@ -125,39 +125,68 @@ equilibriumBondLengths bondOrder symbol1 symbol2 =
         (_, _, _) -> undefined
 
 
-getMaxBonds :: Molecule -> Integer -> Maybe Integer
-getMaxBonds molecule atomID = do
-  atom <- findAtom molecule atomID
-  maxBonds <- getMaxBondsSymbol (symbol $ atomicAttr atom)
-  bondOrders <- getBondOrders molecule atomID
-  return (maxBonds - bondOrders)
+-- getMaxBonds :: Molecule -> Integer -> Maybe Integer
+-- getMaxBonds molecule atomID = do
+--   atom <- findAtom molecule atomID
+--   let maxBonds = getMaxBondsSymbol (symbol $ atomicAttr atom)
+--   bondOrders <- getBondOrders molecule atomID
+--   return ((maxBonds) - bondOrders)
 
-getBondOrders :: Molecule -> Integer -> Maybe Integer
-getBondOrders molecule atomID = do
-  connectedAtoms <- getConnectedAtoms molecule atomID
-  let bondOrders = map (extractBondOrder . fromJust . getBondType molecule atomID) connectedAtoms
-  return (sum bondOrders)
+-- getBondOrders :: Molecule -> Integer -> Maybe Integer
+-- getBondOrders molecule atomID = do
+--   connectedAtoms <- getConnectedAtoms molecule atomID
+--   let bondOrders = map (extractBondOrder . fromJust . getBondType molecule atomID) connectedAtoms
+--   return (sum bondOrders)
+
+-- getMaxBonds :: Molecule -> Integer -> Integer
+-- getMaxBonds molecule atomID = case findAtom molecule atomID of
+--   Just atom ->
+--     let maxBonds = getMaxBondsSymbol (symbol $ atomicAttr atom)
+--         bondOrders = getBondOrders molecule atomID
+--     in maxBonds - bondOrders
+--   Nothing -> 0
+
+-- getBondOrders :: Molecule -> Integer -> Integer
+-- getBondOrders molecule atomID = case getConnectedAtoms molecule atomID of
+--   Just connectedAtoms ->
+--     let bondOrders = map (extractBondOrder . fromJust . getBondType molecule atomID) connectedAtoms
+--     in sum bondOrders
+--   Nothing -> 0
+
+
+getMaxBonds :: Molecule -> Integer -> Integer
+getMaxBonds molecule atomID = case findAtom molecule atomID of
+  Just atom ->
+    let maxBonds = getMaxBondsSymbol (symbol $ atomicAttr atom)
+        bondOrders = getBondOrders molecule atomID
+    in maxBonds - bondOrders
+  Nothing -> 0
+
+getBondOrders :: Molecule -> Integer -> Integer
+getBondOrders molecule atomID = case getConnectedAtoms molecule atomID of
+  Just connectedAtoms -> sum $ map (extractBondOrder . getBondType molecule atomID) connectedAtoms
+  Nothing -> 0
 
 extractBondOrder :: BondType -> Integer
 extractBondOrder (CovalentBond delocNum (Just _)) = 0
 extractBondOrder (CovalentBond delocNum Nothing) = delocNum `div` 2
 extractBondOrder _ = 1
 
-getMaxBondsSymbol :: AtomicSymbol -> Maybe Integer
+getMaxBondsSymbol :: AtomicSymbol -> Integer
 getMaxBondsSymbol symbol =
   case symbol of
-    H -> Just 1
-    C -> Just 4
-    N -> Just 3
-    O -> Just 2
-    F -> Just 1
-    P -> Just 5
-    S -> Just 6
-    Cl -> Just 1
-    Br -> Just 1
-    B -> Just 3
-    Fe -> Just 6
-    I -> Just 1
+    H -> 1
+    C -> 4
+    N -> 3
+    O -> 2
+    F -> 1
+    P -> 5
+    S -> 6
+    Cl -> 1
+    Br -> 1
+    B -> 3
+    Fe -> 6
+    I -> 1
 
 elementAttributes :: AtomicSymbol -> ElementAttributes
 elementAttributes O = ElementAttributes O 8 15.999

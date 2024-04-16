@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Redundant return" #-}
 
 module RandomGraph where
 import Molecule
@@ -26,14 +28,19 @@ updateBondMatrix molecule newAtom = do
   let existingAtoms = atoms molecule
   updatedMolecule <- foldM (\mol existingAtom -> do
     let existingAtomID = atomID existingAtom
-    shouldBond <- sample $ bernoulli 0.2 -- Adjust the probability as needed
-    if shouldBond
-      then do
-        delocNum <- sample $ uniformD [2, 4, 6]
-        let bondType = CovalentBond delocNum Nothing
-        let updatedBonds = bonds mol // [((fromIntegral newAtomID,fromIntegral  existingAtomID), Just bondType), ((fromIntegral existingAtomID,fromIntegral  newAtomID), Just bondType)]
-        return mol {bonds = updatedBonds}
-      else return mol) molecule existingAtoms
+    let numMaxBonds = getMaxBonds mol existingAtomID 
+    if numMaxBonds <= 0 
+        then return mol
+        else do
+        shouldBond <- sample $ bernoulli 0.5 -- Adjust the probability as needed
+        shouldEdge <- sample $ bernoulli $ normalPdf 1.5 0.3 (euclideanDistance (coordinate newAtom) (coordinate existingAtom))
+        if shouldBond && shouldEdge
+          then do
+            delocNum <- sample $ uniformD [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 6]
+            let bondType = CovalentBond delocNum Nothing
+            let updatedBonds = bonds mol // [((fromIntegral newAtomID,fromIntegral  existingAtomID), Just bondType), ((fromIntegral existingAtomID,fromIntegral  newAtomID), Just bondType)]
+            return mol {bonds = updatedBonds}
+        else return mol) molecule existingAtoms
   return updatedMolecule
 
 
