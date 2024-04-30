@@ -1,19 +1,9 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeFamilies #-}
-
 module Orbital where 
 
 import Distr 
 import LazyPPL
 import Data.Maybe
 import Coordinate
-
-data Nat = Z | Succ Nat
-
-type SoMax = Succ Z -- 1
-type PMax = Succ (Succ (Succ Z)) -- 3
-type DMax = Succ (Succ (Succ (Succ (Succ Z)))) -- 5
-type FMax = Succ (Succ (Succ (Succ (Succ (Succ (Succ Z)))))) -- 7
 
 -- Orbital types for each subshell
 data So = So deriving (Show, Eq, Read)
@@ -31,37 +21,22 @@ data Orbital subshellType = Orbital
 -- Each SubShell consists of a list of Orbitals.
 -- We ensure that all orbitals within a subshell are of the same type
 -- by using the subshellType parameter.
-newtype SubShell (maxOrbitals :: Nat) subshellType = SubShell
+newtype SubShell subshellType = SubShell
   { orbitals :: [Orbital subshellType]
   } deriving (Show, Eq, Read)
 
 -- Each Shell has a principal quantum number and consists of a list of SubShells.
 data Shell = Shell
   { principalQuantumNumber :: Int
-  , sSubShell :: Maybe (SubShell SoMax So)
-  , pSubShell :: Maybe (SubShell PMax P)
-  , dSubShell :: Maybe (SubShell DMax D)
-  , fSubShell :: Maybe (SubShell FMax F)
+  , sSubShell :: Maybe (SubShell So)
+  , pSubShell :: Maybe (SubShell P)
+  , dSubShell :: Maybe (SubShell D)
+  , fSubShell :: Maybe (SubShell F)
   } deriving (Show, Eq, Read)
 
 -- An Atom consists of a list of Shells.
 type Shells = [Shell]
--- Hydrogen atom
 
-class SubShellType subshellType where
-  type MaxOrbitals subshellType :: Nat
-
-instance SubShellType So where
-  type MaxOrbitals So = SoMax
-
-instance SubShellType P where
-  type MaxOrbitals P = PMax
-
-instance SubShellType D where
-  type MaxOrbitals D = DMax
-
-instance SubShellType F where
-  type MaxOrbitals F = FMax
 
 -- Hydrogen atom
 hydrogen :: Shells

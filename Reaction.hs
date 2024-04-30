@@ -3,8 +3,8 @@ import Molecule
 
 -- Reactions or transformations between chemical species
 data Reaction = Reaction
-    { reactants :: [(Double, Atom)]
-    , products :: [(Double, Atom)]
+    { reactants :: [(Double, Molecule)]
+    , products :: [(Double, Molecule)]
     , conditions :: [Condition]
     , rate :: ReactionRate
     }

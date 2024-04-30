@@ -1,3 +1,4 @@
+module Parser where
 import System.Directory (listDirectory)
 import System.FilePath (takeExtension)
 import Text.Megaparsec
@@ -95,9 +96,9 @@ buildBondMatrix atomCount bondLines =
                     atom2ID = read atom2Str
                     bondOrder = read bondOrderStr
                     bondType = case bondOrder of
-                        1 -> CovalentBond {delocNum = 2, ring = Nothing}
-                        2 -> CovalentBond {delocNum = 4, ring = Nothing}
-                        3 -> CovalentBond {delocNum = 6, ring = Nothing}
+                        1 -> CovalentBond {delocNum = 2, atomIDs = Nothing}
+                        2 -> CovalentBond {delocNum = 4, atomIDs = Nothing}
+                        3 -> CovalentBond {delocNum = 6, atomIDs = Nothing}
                         _ -> error "Invalid bond order"
                 in ((atom1ID, atom2ID), bondType)
             _ -> error "Invalid bond line format"
@@ -175,8 +176,8 @@ processAtoms filePath (molecule, logSValue) = do
     putStrLn "Parsed atoms:"
     mapM_ putStrLn (map show (atoms molecule))
 
-main :: IO ()
-main = do
+test :: IO ()
+test = do
     let dirPath = "./logs/"
     results <- processSDFDirectory dirPath
     let molecules = map (\(_, (molecule, logS)) -> (molecule, logS)) results
@@ -236,8 +237,8 @@ parseDB1Molecule = do
     (molecule, logPValue) <- parseDB1Contents
     return (molecule, logPValue)
 
-main2 :: IO ()
-main2 = do
+test2 :: IO ()
+test2 = do
     let db1FilePath = "./logp/DB1.sdf"
     db1Molecules <- parseDB1File db1FilePath
     putStrLn $ "Parsed " ++ show (length db1Molecules) ++ " molecules from file: " ++ db1FilePath
@@ -245,3 +246,5 @@ main2 = do
         putStrLn $ prettyPrintMolecule molecule
         putStrLn $ "LogP: " ++ show logP
         putStrLn "") db1Molecules
+
+

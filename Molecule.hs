@@ -1,7 +1,3 @@
-
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE FunctionalDependencies #-}
-
 module Molecule where
 import Control.Applicative (Alternative((<|>)))
 import qualified Data.Vector as V
@@ -27,11 +23,8 @@ data Atom = Atom {
     shells                   :: Shells
   } deriving (Show, Read)
 
-data Bond = Bond {connectedAtomID :: Integer, 
-                    bondType :: BondType}
-
 data BondType = HydrogenBond 
-              | CovalentBond {delocNum :: Integer, ring :: Maybe [Integer]}
+              | CovalentBond {delocNum :: Integer, atomIDs :: Maybe [Integer]}
               | IonicBond deriving (Eq, Read, Show)
 
 data AtomicSymbol = O | H | N | C | B | Fe | F | Cl | S | Br | P | I deriving (Eq, Read, Show)
@@ -58,6 +51,10 @@ getY atom = y (coordinate atom)
 getZ :: Atom -> Double
 getZ atom = z (coordinate atom)
 
+getSymmetricBonds :: [((Integer, Integer), BondType)] -> [((Integer, Integer), BondType)]
+getSymmetricBonds bonds = bonds ++ map swapBond bonds
+  where
+    swapBond ((a, b), bondType) = ((b, a), bondType)
 
 getConnectedAtoms :: Molecule -> Integer -> Maybe [Integer]
 getConnectedAtoms molecule atomID =
