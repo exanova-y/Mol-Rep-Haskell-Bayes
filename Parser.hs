@@ -87,7 +87,7 @@ parseSDFContents = do
 
 buildBondMatrix :: Int -> [String] -> M.Map (Integer, Integer) BondType
 buildBondMatrix atomCount bondLines =
-    M.fromList $ map parseBondLine bondLines
+    M.fromList $ getSymmetricBonds $ map parseBondLine bondLines
   where
     parseBondLine bondLine =
         case words bondLine of
