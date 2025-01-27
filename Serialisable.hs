@@ -1,7 +1,6 @@
 module Serialisable where
 
 import Molecule
-import Molecules.Methane
 
 -- Writing the molecule to a file
 writeMoleculeToFile :: FilePath -> Molecule -> IO ()
