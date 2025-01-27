@@ -12,3 +12,7 @@ monad-extras
 log-domain
 statistics
 megaparsec
+
+Last tested on: 
+ghc   9.4.8      recommended,base-4.17.2.1
+cabal 3.14.1.1
