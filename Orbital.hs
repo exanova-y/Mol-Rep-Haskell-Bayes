@@ -1,7 +1,5 @@
 module Orbital where 
 
-import Distr 
-import LazyPPL
 import Data.Maybe
 import Coordinate
 
