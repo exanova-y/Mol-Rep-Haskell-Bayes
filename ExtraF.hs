@@ -1,4 +1,4 @@
-module Extra where 
+module ExtraF where 
 import LazyPPL
 import Control.Monad
 

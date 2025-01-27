@@ -5,7 +5,7 @@ import LazyPPL
 import Distr
 import Control.Monad
 import Coordinate
-import Extra
+import ExtraF
 import Constants
 import qualified Data.Map as M
 

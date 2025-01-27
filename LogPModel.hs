@@ -8,7 +8,7 @@ import Molecules.Methane
 import Numeric.Log
 import Parser
 import qualified Data.Map as M
-import Extra
+import ExtraF
 
 
 -- | A simple feature extraction function that counts the number of atoms in a molecule

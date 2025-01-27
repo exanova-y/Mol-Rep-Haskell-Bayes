@@ -9,7 +9,7 @@ import Constants
 import Coordinate
 import Control.Monad
 import Data.Maybe
-import Extra
+import ExtraF
 import Data.Array
 import qualified Data.Map as M
 
