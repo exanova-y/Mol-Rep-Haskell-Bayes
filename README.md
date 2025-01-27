@@ -30,4 +30,9 @@ cabal 3.14.1.1 <br>
   <li>:set -package containers</li>
   <li>:set -package array</li>
   <li>:set -package vector</li>
+  <li>:set -package directory</li>
+  <li>:set -package filepath</li>
+  <li>:set -package bytestring</li>
+  <li>:set -package text</li>
+  <li>:set -package filepath</li>
 </ul>
