@@ -1,0 +1,34 @@
+cabal-version:       >=1.10
+
+name:                chemalgprog
+version:             0.1.0.0
+-- synopsis:
+-- description:
+-- bug-reports:
+-- license:
+license-file:        LICENSE
+author:              Samuel March
+maintainer:          sammarch2@gmail.com
+-- copyright:
+-- category:
+build-type:          Simple
+extra-source-files:  CHANGELOG.md, README.md
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     
+build-depends:
+  build-depends:       base >= 4.13 && < 4.17,
+                       monad-extras
+                       transformers,
+                       mtl,
+                       deepseq,
+                       containers,
+                       ghc-heap
+                       megaparsec >=9.0 && <10.0
+                       vector
+                       directory,
+                       filepath,
+                       bytestring,
+                       text
+  default-language:    Haskell2010
