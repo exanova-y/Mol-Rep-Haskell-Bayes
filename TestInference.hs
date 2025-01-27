@@ -1,3 +1,5 @@
+module TestInference where
+
 import Molecule
 import LazyPPL
 import Distr
