@@ -7,21 +7,26 @@ Once you have done this run stack ghci TestInference and then type main to run i
 Alternatively use nix-shell shell.nix as a nix file to load in only the essential pre-requisties.
 
 The following libraries are pre-requisites to use the probabilistic programming aspects of the library.
-random
-monad-extras
-log-domain
-statistics
-megaparsec
+<ul>
+<li>random</li>
+<li>monad-extras</li>
+<li>log-domain</li>
+<li>statistics</li>
+<li>megaparsec</li>
+</ul>
 
-Last tested on: 
-ghc   9.4.8      recommended,base-4.17.2.1
+Last tested on: <br> 
+ghc   9.4.8      recommended,base-4.17.2.1 <br>
 cabal 3.14.1.1
 
-:set -package transformers
-:set -package random
-:set -package mtl
-:set -package deepseq
-:set -package ghc-heap
-:set -package containers
-:set -package array
-:set -package vector
+
+<ul>
+  <li>:set -package transformers</li>
+  <li>:set -package random</li>
+  <li>:set -package mtl</li>
+  <li>:set -package deepseq</li>
+  <li>:set -package ghc-heap</li>
+  <li>:set -package containers</li>
+  <li>:set -package array</li>
+  <li>:set -package vector</li>
+</ul>
