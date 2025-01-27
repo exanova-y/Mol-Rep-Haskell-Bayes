@@ -1,4 +1,4 @@
-module Main where
+module Serialisable where
 
 import Molecule
 import Molecules.Methane
