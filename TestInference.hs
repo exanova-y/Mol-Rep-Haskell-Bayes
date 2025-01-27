@@ -7,12 +7,11 @@ import Control.Monad
 import Coordinate
 import Extra
 import Constants
-import Molecules.Methane
 import qualified Data.Map as M
 
 -- Observed molecule (e.g., H2O)
 observedMolecule :: Molecule
-observedMolecule = h2o
+observedMolecule = undefined
 
 -- A generative model for a molecule
 moleculeModel :: Meas Molecule

@@ -16,3 +16,12 @@ megaparsec
 Last tested on: 
 ghc   9.4.8      recommended,base-4.17.2.1
 cabal 3.14.1.1
+
+:set -package transformers
+:set -package random
+:set -package mtl
+:set -package deepseq
+:set -package ghc-heap
+:set -package containers
+:set -package array
+:set -package vector
