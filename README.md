@@ -16,8 +16,9 @@ The following libraries are pre-requisites to use the probabilistic programming 
 </ul>
 
 Last tested on: <br> 
-ghc   9.4.8      recommended,base-4.17.2.1 <br>
-cabal 3.14.1.1
+base-4.17.2.1 <br>
+ghc   9.4.8   <br>
+cabal 3.14.1.1 <br>
 
 
 <ul>
