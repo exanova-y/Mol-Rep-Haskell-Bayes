@@ -16,7 +16,7 @@ readMoleculeFromFile filePath = do
 main :: IO ()
 main = do
   -- Write the methane molecule to a file
-  writeMoleculeToFile "methane.hs" methane
+  writeMoleculeToFile "methane.hs" undefined
   
   -- Read the methane molecule from the file
   molecule <- readMoleculeFromFile "methane.hs"
