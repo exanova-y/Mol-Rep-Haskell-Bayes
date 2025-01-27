@@ -7,8 +7,8 @@ version:             0.1.0.0
 -- bug-reports:
 -- license:
 license-file:        LICENSE
-author:              Samuel March
-maintainer:          sammarch2@gmail.com
+author:              Oliver Goldstein
+maintainer:          oliverjgoldstein, sammarch2@gmail.com
 -- copyright:
 -- category:
 build-type:          Simple
