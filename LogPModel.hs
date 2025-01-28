@@ -27,9 +27,7 @@ moleculeSurfaceArea mol = let size = moleculeSize mol in 4.0 * pi * (size ** (2.
 moleculeBondOrder :: Molecule -> Double
 moleculeBondOrder = fromIntegral . Prelude.sum . map (uncurry bondOrder) . M.toList . bonds
   where
-    bondOrder _ HydrogenBond = 1
-    bondOrder _ (CovalentBond n _) = n
-    bondOrder _ IonicBond = 1
+    bondOrder _ (Bond n _) = n
 
 -- | The generative model for logP values
 logPModel :: (Molecule, Double) -> Meas (Double, Double, Double, Double, Double)

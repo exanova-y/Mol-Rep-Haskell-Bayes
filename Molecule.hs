@@ -23,9 +23,7 @@ data Atom = Atom {
     shells                   :: Shells
   } deriving (Show, Read)
 
-data BondType = HydrogenBond 
-              | CovalentBond {delocNum :: Integer, atomIDs :: Maybe [Integer]}
-              | IonicBond deriving (Eq, Read, Show)
+data BondType = Bond {delocNum :: Integer, atomIDs :: Maybe [Integer]} deriving (Eq, Read, Show)
 
 data AtomicSymbol = O | H | N | C | B | Fe | F | Cl | S | Br | P | I deriving (Eq, Read, Show)
 
@@ -116,5 +114,5 @@ prettyPrintMolecule molecule = "Atoms:\n" ++ concatMap prettyPrintAtom (atoms mo
 getBondOrder :: Molecule -> Int -> Int -> Int
 getBondOrder molecule i j =
     case M.lookup (toInteger i, toInteger j) (bonds molecule) of
-        Just (CovalentBond delocNum _) -> fromIntegral delocNum
+        Just (Bond delocNum _) -> fromIntegral delocNum
         _                              -> 0

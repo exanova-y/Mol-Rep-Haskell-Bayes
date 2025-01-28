@@ -124,54 +124,6 @@ equilibriumBondLengths bondOrder symbol1 symbol2 =
         (3, Fe, Fe) -> Angstrom 2.26
         (_, _, _) -> undefined
 
-
--- getMaxBonds :: Molecule -> Integer -> Maybe Integer
--- getMaxBonds molecule atomID = do
---   atom <- findAtom molecule atomID
---   let maxBonds = getMaxBondsSymbol (symbol $ atomicAttr atom)
---   bondOrders <- getBondOrders molecule atomID
---   return ((maxBonds) - bondOrders)
-
--- getBondOrders :: Molecule -> Integer -> Maybe Integer
--- getBondOrders molecule atomID = do
---   connectedAtoms <- getConnectedAtoms molecule atomID
---   let bondOrders = map (extractBondOrder . fromJust . getBondType molecule atomID) connectedAtoms
---   return (sum bondOrders)
-
--- getMaxBonds :: Molecule -> Integer -> Integer
--- getMaxBonds molecule atomID = case findAtom molecule atomID of
---   Just atom ->
---     let maxBonds = getMaxBondsSymbol (symbol $ atomicAttr atom)
---         bondOrders = getBondOrders molecule atomID
---     in maxBonds - bondOrders
---   Nothing -> 0
-
--- getBondOrders :: Molecule -> Integer -> Integer
--- getBondOrders molecule atomID = case getConnectedAtoms molecule atomID of
---   Just connectedAtoms ->
---     let bondOrders = map (extractBondOrder . fromJust . getBondType molecule atomID) connectedAtoms
---     in sum bondOrders
---   Nothing -> 0
-
-
-getMaxBonds :: Molecule -> Integer -> Integer
-getMaxBonds molecule atomID = case findAtom molecule atomID of
-  Just atom ->
-    let maxBonds = getMaxBondsSymbol (symbol $ atomicAttr atom)
-        bondOrders = getBondOrders molecule atomID
-    in maxBonds - bondOrders
-  Nothing -> 0
-
-getBondOrders :: Molecule -> Integer -> Integer
-getBondOrders molecule atomID = case getConnectedAtoms molecule atomID of
-  Just connectedAtoms -> sum $ map (extractBondOrder . getBondType molecule atomID) connectedAtoms
-  Nothing -> 0
-
-extractBondOrder :: BondType -> Integer
-extractBondOrder (CovalentBond delocNum (Just _)) = 0
-extractBondOrder (CovalentBond delocNum Nothing) = delocNum `div` 2
-extractBondOrder _ = 1
-
 getMaxBondsSymbol :: AtomicSymbol -> Integer
 getMaxBondsSymbol symbol =
   case symbol of

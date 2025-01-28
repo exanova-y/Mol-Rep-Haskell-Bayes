@@ -96,9 +96,9 @@ buildBondMatrix atomCount bondLines =
                     atom2ID = read atom2Str
                     bondOrder = read bondOrderStr
                     bondType = case bondOrder of
-                        1 -> CovalentBond {delocNum = 2, atomIDs = Nothing}
-                        2 -> CovalentBond {delocNum = 4, atomIDs = Nothing}
-                        3 -> CovalentBond {delocNum = 6, atomIDs = Nothing}
+                        1 -> Bond {delocNum = 2, atomIDs = Nothing}
+                        2 -> Bond {delocNum = 4, atomIDs = Nothing}
+                        3 -> Bond {delocNum = 6, atomIDs = Nothing}
                         _ -> error "Invalid bond order"
                 in ((atom1ID, atom2ID), bondType)
             _ -> error "Invalid bond line format"
