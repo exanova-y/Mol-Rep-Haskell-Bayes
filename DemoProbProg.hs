@@ -1,4 +1,4 @@
-module Demo where 
+module DemoProbProg where 
 import Control.Monad
 import LazyPPL
 import Molecule
