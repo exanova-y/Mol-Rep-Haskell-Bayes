@@ -188,12 +188,6 @@ test = do
         putStrLn $ "LogS: " ++ show logS
         putStrLn "") molecules
 
-
-
-
-
-
-
 parseDB1Contents :: Parser (Molecule, Double)
 parseDB1Contents = do
     -- Skip the header lines
@@ -202,22 +196,24 @@ parseDB1Contents = do
     void $ manyTill anySingle (try $ string "\n")
     countLine <- manyTill anySingle (try $ string "\n")
     let (atomCount, bondCount, _) = parseCountLine countLine
-    atoms <- zipWithM parseAtom [1..atomCount] (replicate atomCount ())
+    atoms <- zipWithM parseAtom [1 .. atomCount] (replicate atomCount ())
     bondLines <- count bondCount (manyTill anySingle (try $ string "\n"))
     let bondMatrix = buildBondMatrix atomCount bondLines
 
-    -- Parse any additional lines until "> <logP>"
-    void $ manyTill anySingle (try $ string ">  <logP>")
+    -- Optionally parse the logP section.
+    -- We first use lookAhead to see if the marker is present.
+    mLogPMarker <- optional $ try $ lookAhead $ string ">  <logP>"
+    logPValue <- case mLogPMarker of
+      Nothing -> return 0.0  -- or any default value you'd like
+      Just _  -> do
+          void $ manyTill anySingle (try $ string ">  <logP>")
+          void $ manyTill anySingle (try $ string "\n")
+          logPLine <- manyTill anySingle (try $ string "\n")
+          case runParser parseDouble "" logPLine of
+              Left _ -> fail "Invalid logP value"
+              Right value -> return value
 
-    -- Parse the logP value
-    logPValue <- try $ do
-        void $ manyTill anySingle (try $ string "\n")
-        logPLine <- manyTill anySingle (try $ string "\n")
-        case runParser parseDouble "" logPLine of
-            Left _ -> fail "Invalid logP value"
-            Right value -> return value
-
-    -- Skip the remaining lines until "$$$$"
+    -- Skip the remaining lines until "$$$$\n"
     void $ manyTill anySingle (try $ string "$$$$\n")
     return (Molecule atoms bondMatrix, logPValue)
 
