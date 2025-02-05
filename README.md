@@ -48,3 +48,5 @@ This is as the following are not exposed.
   <li>:set -package text</li>
   <li>:set -package filepath</li>
 </ul>
+
+Author: Oliver Goldstein (oliverjgoldstein@gmail.com / oliver.goldstein@reuben.ox.ac.uk)
