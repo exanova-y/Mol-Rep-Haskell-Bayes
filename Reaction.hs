@@ -1,30 +1,29 @@
 module Reaction where
 import Molecule
 
+
 -- Reactions or transformations between chemical species
 data Reaction = Reaction
     { reactants :: [(Double, Molecule)]
     , products :: [(Double, Molecule)]
     , conditions :: [Condition]
-    , rate :: ReactionRate
+    , rate :: Double
     }
 
 -- Conditions under which a reaction occurs
-data Condition = TempCondition {temperature :: Double Times}  
-                | PressureCondition {presssure :: Double Times}
+data Condition = TempCondition {temperature :: Double}  
+                | PressureCondition {presssure :: Double}
 
-newtype Times = (StartTime Double, EndTime Double)
-
-newtype ChemicalReactionNetwork = ChemicalReactionNetwork { reactions :: [Reaction] }
+data Times = Times { startTime :: Double, endTime :: Double }
 
 -- Example reaction: 2H2 + O2 -> 2H2O
 exampleReaction :: Reaction
 exampleReaction = Reaction
-  { reactants = [(2.0, h2), (1.0, o2)]
-  , products = [(2.0, h2o)]
+  { reactants = [(2.0, undefined), (1.0, undefined)]
+  , products = [(2.0, undefined)]
   , conditions =
-      [ TempCondition 500.0 (Times (0.0, 10.0))
-      , PressureCondition 1.0 (Times (0.0, 10.0))
+      [ TempCondition 500.0
+      , PressureCondition 1.0
       ]
-  , rate = ReactionRate 0.1
+  , rate = 0.1
   }

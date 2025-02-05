@@ -3,328 +3,948 @@ module Orbital where
 import Data.Maybe
 import Coordinate
 
--- Orbital types for each subshell
-data So = So deriving (Show, Eq, Read)
-data P = Px | Py | Pz deriving (Show, Eq, Read)
-data D = Dxy | Dyz | Dxz | Dx2y2 | Dz2 deriving (Show, Eq, Read)
-data F = Fxxx | Fxxy | Fxxz | Fxyy | Fxyz | Fxzz | Fzzz deriving (Show, Eq, Read)
+-- Basic orbital types
+data So = So 
+  deriving (Show, Eq, Read)
 
--- The Orbital has a type and a number of electrons.
-data Orbital subshellType = Orbital
-  { orbitalType :: subshellType
-  , electronCount :: Int
-  , orientation :: Maybe Coordinate
+data P = Px | Py | Pz 
+  deriving (Show, Eq, Read)
+
+data D = Dxy | Dyz | Dxz | Dx2y2 | Dz2 
+  deriving (Show, Eq, Read)
+
+data F = Fxxx | Fxxy | Fxxz | Fxyy | Fxyz | Fxzz | Fzzz 
+  deriving (Show, Eq, Read)
+
+-- A type to wrap one of the pure orbital types,
+-- useful when describing the components of a hybrid orbital.
+data PureOrbital = PureSo So
+                 | PureP  P
+                 | PureD  D
+                 | PureF  F
+                 deriving (Show, Eq, Read)
+
+-- The Orbital type now includes an extra field for hybrid components.
+-- For a pure orbital, `hybridComponents` is Nothing.
+data Orbital subshellType = Orbital 
+  { orbitalType      :: subshellType
+  , electronCount    :: Int
+  , orientation      :: Maybe Coordinate
+  , hybridComponents :: Maybe [(Double, PureOrbital)]
   } deriving (Show, Eq, Read)
 
--- Each SubShell consists of a list of Orbitals.
--- We ensure that all orbitals within a subshell are of the same type
--- by using the subshellType parameter.
-newtype SubShell subshellType = SubShell
+-- A SubShell is a list of Orbitals all having the same subshell type.
+newtype SubShell subshellType = SubShell 
   { orbitals :: [Orbital subshellType]
   } deriving (Show, Eq, Read)
 
--- Each Shell has a principal quantum number and consists of a list of SubShells.
-data Shell = Shell
+-- A Shell has a principal quantum number and may contain s, p, d, and f subshells.
+data Shell = Shell 
   { principalQuantumNumber :: Int
-  , sSubShell :: Maybe (SubShell So)
-  , pSubShell :: Maybe (SubShell P)
-  , dSubShell :: Maybe (SubShell D)
-  , fSubShell :: Maybe (SubShell F)
+  , sSubShell              :: Maybe (SubShell So)
+  , pSubShell              :: Maybe (SubShell P)
+  , dSubShell              :: Maybe (SubShell D)
+  , fSubShell              :: Maybe (SubShell F)
   } deriving (Show, Eq, Read)
 
--- An Atom consists of a list of Shells.
+-- A Shells type is just a list of Shell.
 type Shells = [Shell]
 
 
--- Hydrogen atom
+-- Hydrogen atom: 1s^1
 hydrogen :: Shells
 hydrogen =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital So 1 Nothing]) -- 1s^1
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 1
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
 
--- Carbon atom
+-- Carbon atom: 1s^2, 2s^2, 2p^2 (one electron in each of two p orbitals)
 carbon :: Shells
 carbon =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 1 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0))]) -- 2p^2, with one electron in each of two p orbitals
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
 
--- Nitrogen atom
+-- Nitrogen atom: 1s^2, 2s^2, 2p^3
 nitrogen :: Shells
 nitrogen =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 1 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 1 (Just (Coordinate 0 0 1))]) -- 2p^3
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
 
--- Oxygen atom
+-- Oxygen atom: 1s^2, 2s^2, 2p^4
 oxygen :: Shells
 oxygen =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 1 (Just (Coordinate 0 0 1))]) -- 2p^4
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
 
--- Boron atom
+-- Boron atom: 1s^2, 2s^2, 2p^1
 boron :: Shells
 boron =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 1 (Just (Coordinate 1 0 0))]) -- 2p^1
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
 
--- Iron atom
+-- Iron atom: 1s^2, 2s^2, 2p^6, 3s^2, 3p^6, 3d^6, 4s^2
 iron :: Shells
 iron =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^6
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 3
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 3s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 3p^6
-      , dSubShell = Just (SubShell [Orbital Dxy 1 (Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)), Orbital Dyz 1 (Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))), Orbital Dxz 1 (Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))), Orbital Dx2y2 1 (Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)), Orbital Dz2 1 (Just (Coordinate 0 0 1))]) -- 3d^6
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , dSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = Dxy
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dyz
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dxz
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dx2y2
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dz2
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 4
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 4s^2
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
 
+-- Chlorine atom: 1s^2, 2s^2, 2p^5, 3s^2, 3p^5
 chlorine :: Shells
 chlorine =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^5
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 3
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 3s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 3p^5
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
 
+-- Fluorine atom: 1s^2, 2s^2, 2p^5
 fluorine :: Shells
 fluorine =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 1 (Just (Coordinate 0 0 1))]) -- 2p^5
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
 
+-- Sulfur atom: 1s^2, 2s^2, 2p^6, 3s^2, 3p^4
 sulfur :: Shells
 sulfur =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^6
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 3
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 3s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 1 (Just (Coordinate 0 0 1))]) -- 3p^4
+      , sSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell 
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
 
+-- Bromine atom: 1s^2, 2s^2, 2p^6, 3s^2, 3p^6, 3d^10, 4s^2, 4p^5
 bromine :: Shells
 bromine =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^6
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 3
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 3s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 3p^6
-      , dSubShell = Just (SubShell [Orbital Dxy 2 (Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)), Orbital Dyz 2 (Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))), Orbital Dxz 2 (Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))), Orbital Dx2y2 2 (Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)), Orbital Dz2 2 (Just (Coordinate 0 0 1))]) -- 3d^10
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , dSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Dxy
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dyz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dxz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dx2y2
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dz2
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 4
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 4s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 0 Nothing]) -- 4p^5
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 0
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
 
+-- Phosphorus atom: 1s^2, 2s^2, 2p^6, 3s^2, 3p^3
 phosphorus :: Shells
 phosphorus =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^6
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 3
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 3s^2
-      , pSubShell = Just (SubShell [Orbital Px 1 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 1 (Just (Coordinate 0 0 1))]) -- 3p^3
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
 
+-- Iodine atom: 1s^2, 2s^2, 2p^6, 3s^2, 3p^6, 3d^10, 4s^2, 4p^6, 4d^10, 5s^2, 5p^5
 iodine :: Shells
 iodine =
   [ Shell
       { principalQuantumNumber = 1
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 1s^2
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 2
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 2s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 2p^6
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 3
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 3s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 3p^6
-      , dSubShell = Just (SubShell [Orbital Dxy 2 (Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)), Orbital Dyz 2 (Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))), Orbital Dxz 2 (Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))), Orbital Dx2y2 2 (Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)), Orbital Dz2 2 (Just (Coordinate 0 0 1))]) -- 3d^10
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , dSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Dxy
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dyz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dxz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dx2y2
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dz2
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 4
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 4s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 2 (Just (Coordinate 0 1 0)), Orbital Pz 2 (Just (Coordinate 0 0 1))]) -- 4p^6
-      , dSubShell = Just (SubShell [Orbital Dxy 2 (Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)), Orbital Dyz 2 (Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))), Orbital Dxz 2 (Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))), Orbital Dx2y2 2 (Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)), Orbital Dz2 2 (Just (Coordinate 0 0 1))]) -- 4d^10
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , dSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Dxy
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dyz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dxz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dx2y2
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Dz2
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , fSubShell = Nothing
       }
   , Shell
       { principalQuantumNumber = 5
-      , sSubShell = Just (SubShell [Orbital So 2 Nothing]) -- 5s^2
-      , pSubShell = Just (SubShell [Orbital Px 2 (Just (Coordinate 1 0 0)), Orbital Py 1 (Just (Coordinate 0 1 0)), Orbital Pz 0 Nothing]) -- 5p^5
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
+      , pSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 1
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing
+                                    }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 0
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing
+                                    }
+                          ])
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
   ]
-
-
-
-
-
-
-
-
