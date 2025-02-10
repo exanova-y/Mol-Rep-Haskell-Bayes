@@ -4,7 +4,6 @@ import Molecule
 import Distr
 import LazyPPL
 import Control.Monad
-import Molecules.Methane
 import Numeric.Log
 import Parser
 import qualified Data.Map as M
