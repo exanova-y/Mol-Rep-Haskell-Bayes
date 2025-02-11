@@ -93,8 +93,8 @@ fth5 (_, _, _, x, _) = x
 fifth :: (a, b, c, d, e) -> e
 fifth (_, _, _, _, x) = x
 
-main :: Int -> Int -> Int -> Double -> IO ()
-main numMol burnIn samplesize jitter = do
+main :: Molecule -> Int -> Int -> Int -> Double -> IO ()
+main testMol numMol burnIn samplesize jitter = do
     let db1FilePath = "./logp/QuickDB1.sdf"
     db1Molecules <- parseDB1File db1FilePath
     putStrLn $ "Parsed " ++ show (length db1Molecules) ++ " molecules from file: " ++ db1FilePath
