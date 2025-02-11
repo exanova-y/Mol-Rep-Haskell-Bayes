@@ -1,4 +1,4 @@
-This is a datatype for molecules, complete with orbitals, reaction dynamics and group theoretic properties.
+This is a datatype for molecules, complete with orbitals, reaction dynamics and group theoretic properties. It corresponds to the article here: https://arxiv.org/abs/2501.13633
 
 To use this, install LazyPPL (https://github.com/lazyppl-team/lazyppl) with stack and copy all of these files into the Src directory of LazyPPL. These files have not been written by us, but by https://msp.cis.strath.ac.uk/act2022/papers/ACT2022_paper_8887.pdf by Swaraj Dash, Younesse Kaddar, Hugo Paquet, Sam Staton. These files are included with permission.
 
