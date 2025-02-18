@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module ParserTwo where
+module ParserSingle where
 
 import System.Directory (listDirectory)
 import System.FilePath (takeExtension, (</>))

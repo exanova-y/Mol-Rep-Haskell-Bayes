@@ -5,7 +5,7 @@ import Molecule
 import Constants (getMaxBondsSymbol)
 import qualified Data.Map as M
 import Control.Monad (forM_, when)
-import ParserTwo (parseSDFFileNoLog)
+import ParserSingle (parseSDFFileNoLog)
 import Text.Megaparsec (errorBundlePretty)
 
 --------------------------------------------------------------------------------

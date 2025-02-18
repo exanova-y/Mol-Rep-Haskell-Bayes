@@ -72,6 +72,29 @@ moleculeModel observed = do
 
   return molecule
 
+-- | Randomly generate a bond graph for a molecule with n atoms.
+--   For each unique pair (i,j) (with i < j), we randomly decide whether
+--   to include a bond. If a bond is included, we sample its bond order from [1,2,3]
+--   and then create a bond with a corresponding 'delocNum'.
+randomBonds :: Int -> Meas (M.Map (Integer, Integer) BondType)
+randomBonds n = do
+  let pairs = [ (i, j) | i <- [1..fromIntegral n], j <- [i+1 .. fromIntegral n] ]
+  bondList <- forM pairs $ \(i, j) -> do
+      include <- sample $ uniformD [False, True]
+      if include
+         then do
+           bondOrder <- sample $ uniformD [1,2,3]
+           let bondType = case bondOrder of
+                   1 -> Bond { delocNum = 2, atomIDs = Nothing }
+                   2 -> Bond { delocNum = 4, atomIDs = Nothing }
+                   3 -> Bond { delocNum = 6, atomIDs = Nothing }
+                   _ -> error "Invalid bond order"
+           return $ Just ((i, j), bondType)
+         else return Nothing
+  let bondsList = catMaybes bondList
+  return $ M.fromList (getSymmetricBonds bondsList)
+
+
 --------------------------------------------------------------------------------
 -- Sample a coordinate from a normal distribution.
 sampleCoordinate :: Meas Coordinate
