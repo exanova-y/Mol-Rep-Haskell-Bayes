@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Main (main) where
+module Validator where
 
 import Molecule
 import Constants (getMaxBondsSymbol)
@@ -56,8 +56,8 @@ validateMolecule molecule = do
 --------------------------------------------------------------------------------
 -- | Main: Parse "molecules/water.sdf" and report if the molecule is valid.
 --------------------------------------------------------------------------------
-main :: IO ()
-main = do
+validate :: IO ()
+validate = do
     let filePath = "molecules/water.sdf"  -- adjust if needed
     putStrLn $ "Parsing " ++ filePath ++ "..."
     parseResult <- parseSDFFileNoLog filePath

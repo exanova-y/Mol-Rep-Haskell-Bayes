@@ -12,6 +12,9 @@ import Control.Monad
 import Coordinate
 import ExtraF
 import Constants
+import Validator
+import Text.Printf (printf)
+
 
 --------------------------------------------------------------------------------
 -- | Read the observed molecule from file.
@@ -97,11 +100,16 @@ hausdorffDistance mol1 mol2 =
   in max (maximum d1) (maximum d2)
 
 --------------------------------------------------------------------------------
--- Example usage
+-- | Main: Validate the observed molecule, then sample from the model only if valid.
+--------------------------------------------------------------------------------
 main :: IO ()
 main = do
   observed <- observedMoleculeIO
-  samples <- mh 0.1 (moleculeModel observed)
-  let (molecules, weights) = unzip $ take 1000 $ drop 1000 samples
-  putStrLn $ "Sampled molecules: " ++ show molecules
-  putStrLn $ "Weights: " ++ show weights
+  case validateMolecule observed of
+    Left err -> putStrLn $ "Invalid observed molecule: " ++ err
+    Right validObserved -> do
+      putStrLn "Observed molecule is valid. Proceeding with sampling..."
+      samples <- mh 0.1 (moleculeModel validObserved)
+      let (molecules, weights) = unzip $ take 1000 $ drop 1000 samples
+      putStrLn $ "Sampled molecules: " ++ show molecules
+      putStrLn $ "Weights: " ++ show weights
