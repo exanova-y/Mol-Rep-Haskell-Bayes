@@ -12,8 +12,8 @@ import Control.Monad
 import Coordinate
 import ExtraF
 import Constants
-import qualified Data.Map as M
 
+--------------------------------------------------------------------------------
 -- | Read the observed molecule from file.
 observedMoleculeIO :: IO Molecule
 observedMoleculeIO = do
@@ -23,7 +23,7 @@ observedMoleculeIO = do
     [] -> error "No molecule found in file!"
     ((molecule, _):_) -> return molecule
 
-
+--------------------------------------------------------------------------------
 -- | A generative model for a molecule that takes an observed molecule for scoring.
 moleculeModel :: Molecule -> Meas Molecule
 moleculeModel observed = do
@@ -58,7 +58,7 @@ moleculeModel observed = do
                            else return Nothing)
                       possiblePairs
   let bondsList = catMaybes bondsMaybe
-      bondsMap  = M.fromList bondsList  -- Each bond stored once with a symmetric key.
+      bondsMap  = M.fromList (getSymmetricBonds bondsList)  -- Ensure symmetry
 
   -- Create the molecule with atoms and bonds.
   let molecule = Molecule { atoms = atoms, bonds = bondsMap }
@@ -69,7 +69,8 @@ moleculeModel observed = do
 
   return molecule
 
--- Sample a coordinate from a normal distribution
+--------------------------------------------------------------------------------
+-- Sample a coordinate from a normal distribution.
 sampleCoordinate :: Meas Coordinate
 sampleCoordinate = do
   x <- sample $ normal 0 1
@@ -77,11 +78,14 @@ sampleCoordinate = do
   z <- sample $ normal 0 1
   return $ Coordinate x y z
 
--- Calculate the Euclidean distance between two coordinates
+--------------------------------------------------------------------------------
+-- Calculate the Euclidean distance between two coordinates.
 euclideanDistance :: Coordinate -> Coordinate -> Double
 euclideanDistance (Coordinate x1 y1 z1) (Coordinate x2 y2 z2) =
   sqrt $ (x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2
 
+--------------------------------------------------------------------------------
+-- Compute the Hausdorff distance between two molecules.
 hausdorffDistance :: Molecule -> Molecule -> Double
 hausdorffDistance mol1 mol2 =
   let coords1 = map coordinate (atoms mol1)
@@ -92,6 +96,7 @@ hausdorffDistance mol1 mol2 =
       d2 = [minimum [euclideanDistance c2 c1 | c1 <- coords1] | c2 <- coords2]
   in max (maximum d1) (maximum d2)
 
+--------------------------------------------------------------------------------
 -- Example usage
 main :: IO ()
 main = do
