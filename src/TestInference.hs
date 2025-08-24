@@ -134,5 +134,6 @@ main = do
       putStrLn "Observed molecule is valid. Proceeding with sampling..."
       samples <- mh 0.1 (moleculeModel validObserved)
       let (molecules, weights) = unzip $ take 1000 $ drop 1000 samples
-      putStrLn $ "Sampled molecules: " ++ show molecules
+      putStrLn "Sampled molecules:"
+      mapM_ (putStrLn . prettyPrintMolecule) molecules
       putStrLn $ "Weights: " ++ show weights
