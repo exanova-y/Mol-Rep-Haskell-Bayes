@@ -1,11 +1,22 @@
 { pkgs ? import <nixpkgs> {} }:
 let
-  ghc = pkgs.haskell.packages.ghc92.ghcWithPackages
-          (p: [ p.random
-                p.monad-extras
+  ghc = pkgs.haskell.packages.ghc94.ghcWithPackages
+          (p: [ p.monad-extras
+                p.transformers
+                p.mtl
+                p.deepseq
+                p.containers
+                p.ghc-heap
+                p.megaparsec
+                p.vector
+                p.directory
+                p.filepath
+                p.bytestring
+                p.text
+                p.random
                 p.log-domain
                 p.statistics
-		p.megaparsec
+                p.array
               ]);
 in
 pkgs.mkShell {
