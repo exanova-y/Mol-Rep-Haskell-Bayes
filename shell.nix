@@ -1,6 +1,6 @@
 { pkgs ? import <nixpkgs> {} }:
 let
-  ghc = pkgs.haskell.packages.ghc94.ghcWithPackages
+  ghc = pkgs.haskell.packages.ghc96.ghcWithPackages
           (p: [ p.monad-extras
                 p.transformers
                 p.mtl
