@@ -48,7 +48,7 @@ library:
     - ParserSingle
     - LogPModel
     - Validator
-  default-language: Haskell2010
+  language: Haskell2010
 
 executables:
   chemalgprog:
@@ -56,4 +56,4 @@ executables:
     source-dirs: app
     dependencies:
       - chemalgprog
-    default-language: Haskell2010
+    language: Haskell2010
