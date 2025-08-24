@@ -24,6 +24,10 @@ Author: Oliver Goldstein (oliverjgoldstein@gmail.com / oliver.goldstein@reuben.o
 
 Distributed under the terms of the GNU Affero General Public License v3.0 only. See [LICENSE.txt](LICENSE.txt) for details.
 
+## LazyPPL Disclaimer
+
+The probabilistic programming components (`LazyPPL.hs` and `Distr.hs`) are taken from the [LazyPPL project](https://github.com/lazyppl-team/lazyppl) by Swaraj Dash, Younesse Kaddar, Hugo Paquet, and Sam Staton. These files were not written by us and are included here with permission.
+
 ## What the Program Does
 
 The entrypoint `app/Main.hs` simply delegates to `TestInference.main`, so the core behavior is defined in `src/TestInference.hs`.
