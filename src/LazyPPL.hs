@@ -59,14 +59,18 @@ uniform = Prob $ \(Tree r _) -> r
 -- | Probabilities for a monad.
 -- | Sequencing is done by splitting the tree
 -- | and using different bits for different computations.
+instance Functor Prob where
+  fmap = liftM
+
+instance Applicative Prob where
+  pure a = Prob $ const a
+  (<*>) = ap
+
 instance Monad Prob where
-  return a = Prob $ const a
   (Prob m) >>= f = Prob $ \g ->
     let (g1, g2) = splitTree g
         (Prob m') = f (m g1)
     in m' g2
-instance Functor Prob where fmap = liftM
-instance Applicative Prob where {pure = return ; (<*>) = ap}
 
 {- | An unnormalized measure is represented by a probability distribution over pairs of a weight and a result -}
 newtype Meas a = Meas (WriterT (Product (Log Double)) Prob a)
