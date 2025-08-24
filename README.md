@@ -23,3 +23,38 @@ Author: Oliver Goldstein (oliverjgoldstein@gmail.com / oliver.goldstein@reuben.o
 ## License
 
 Distributed under the terms of the GNU Affero General Public License v3.0 only. See [LICENSE.txt](LICENSE.txt) for details.
+
+## What the Program Does
+
+The entrypoint `app/Main.hs` simply delegates to `TestInference.main`, so the core behavior is defined in `src/TestInference.hs`.
+
+At startup, `TestInference.main`:
+
+1. **Loads and validates data**
+   - Reads the observed molecule from `molecules/water.sdf`.
+   - Runs a validation check on the input structure.
+
+2. **Defines a probabilistic model**
+   - The model (`moleculeModel`) randomly samples atoms, bonds, and coordinates for a **3-atom molecule**.
+   - It then scores the generated structure by comparing its geometry to the observed molecule using:
+     - **Hausdorff distance** (shape similarity).
+     - A **normal likelihood** on that distance.
+
+3. **Runs Metropolis–Hastings inference**
+   - Uses `mh 0.1` from the `LazyPPL` module (random-walk MCMC).
+   - At each step:
+     - Mutates random sites in the generative program.
+     - Re-evaluates the model.
+     - Accepts or rejects proposals via the MH acceptance ratio.
+
+4. **Collects samples**
+   - Drops the first **1000 draws** (burn-in).
+   - Takes the next **1000 (molecule, weight) pairs**.
+   - Prints the results.
+
+---
+
+**In short:**  
+The executable performs **Metropolis–Hastings MCMC** to sample molecular structures that are consistent with the observed “water” molecule, according to the probabilistic model in `moleculeModel`.
+
+
