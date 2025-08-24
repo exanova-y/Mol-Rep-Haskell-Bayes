@@ -19,3 +19,7 @@ The accompanying paper describes two illustrative experiments:
 Sample SDF files for these experiments are provided in `molecules/` and `logp/`.
 
 Author: Oliver Goldstein (oliverjgoldstein@gmail.com / oliver.goldstein@reuben.ox.ac.uk)
+
+## License
+
+Distributed under the terms of the GNU Affero General Public License v3.0 only. See [LICENSE.txt](LICENSE.txt) for details.
