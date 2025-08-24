@@ -1,0 +1,43 @@
+name: chemalgprog
+version: 0.1.0.0
+author: Oliver Goldstein
+license: AGPL-3.0
+dependencies:
+  - base >= 4.13 && < 4.21
+  - monad-extras
+  - transformers
+  - mtl
+  - deepseq
+  - containers
+  - ghc-heap
+  - megaparsec >= 9.0 && < 10.0
+  - vector
+  - directory
+  - filepath
+  - bytestring
+  - text
+  - random
+  - log-domain
+  - statistics
+  - array
+
+library:
+  source-dirs: .
+  exposed-modules:
+    - LazyPPL
+    - Molecule
+    - Constants
+    - Distr
+    - Coordinate
+    - Group
+    - Orbital
+    - Parser
+    - Reaction
+    - Serialisable
+  default-language: Haskell2010
+
+executables:
+  chemalgprog:
+    main: Main.hs
+    source-dirs: app
+    default-language: Haskell2010
