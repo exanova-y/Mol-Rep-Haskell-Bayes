@@ -14,6 +14,8 @@ import ExtraF
 import Constants
 import Validator
 import Text.Printf (printf)
+import Data.Monoid (Product(..))
+import Numeric.Log (Log)
 
 
 --------------------------------------------------------------------------------
@@ -123,6 +125,14 @@ hausdorffDistance mol1 mol2 =
   in max (maximum d1) (maximum d2)
 
 --------------------------------------------------------------------------------
+-- | Pretty print a list of weights with their indices.
+prettyPrintWeights :: [Product (Log Double)] -> String
+prettyPrintWeights ws =
+  unlines $ zipWith format [1 :: Int ..] ws
+  where
+    format i w = printf "%4d: %s" i (show (getProduct w))
+
+--------------------------------------------------------------------------------
 -- | Main: Validate the observed molecule, then sample from the model only if valid.
 --------------------------------------------------------------------------------
 main :: IO ()
@@ -136,4 +146,5 @@ main = do
       let (molecules, weights) = unzip $ take 1000 $ drop 1000 samples
       putStrLn "Sampled molecules:"
       mapM_ (putStrLn . prettyPrintMolecule) molecules
-      putStrLn $ "Weights: " ++ show weights
+      putStrLn "Weights:"
+      putStrLn $ prettyPrintWeights weights
