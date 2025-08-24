@@ -1,6 +1,5 @@
 name: chemalgprog
 version: 0.1.0.0
-<<<<<<< codex/reorganize-project-structure
 synopsis: Chemical Algorithmic Programming
 description: A library for molecular representation and probabilistic programming.
 category: Development
@@ -11,11 +10,6 @@ license-file: LICENSE.txt
 extra-source-files:
   - CHANGELOG.md
   - README.md
-
-=======
-author: Oliver Goldstein
-license: AGPL-3.0
->>>>>>> main
 dependencies:
   - base >= 4.13 && < 4.21
   - monad-extras
@@ -36,11 +30,7 @@ dependencies:
   - array
 
 library:
-<<<<<<< codex/reorganize-project-structure
   source-dirs: src
-=======
-  source-dirs: .
->>>>>>> main
   exposed-modules:
     - LazyPPL
     - Molecule
@@ -52,24 +42,18 @@ library:
     - Parser
     - Reaction
     - Serialisable
-<<<<<<< codex/reorganize-project-structure
     - TestInference
   other-modules:
     - ExtraF
     - ParserSingle
     - LogPModel
     - Validator
-=======
   default-language: Haskell2010
->>>>>>> main
 
 executables:
   chemalgprog:
     main: Main.hs
     source-dirs: app
-<<<<<<< codex/reorganize-project-structure
     dependencies:
       - chemalgprog
-=======
     default-language: Haskell2010
->>>>>>> main
