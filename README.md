@@ -52,8 +52,8 @@ At startup, `TestInference.main`:
      - Accepts or rejects proposals via the MH acceptance ratio.
 
 4. **Collects samples**
-   - Drops the first **1000 draws** (burn-in).
-   - Takes the next **1000 (molecule, weight) pairs**.
+   - Drops the first **60000 draws** (burn-in).
+   - Takes the next **2000 (molecule, weight) pairs**.
    - Prints the results.
 
 ---
