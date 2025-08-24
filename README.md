@@ -22,7 +22,7 @@ Author: Oliver Goldstein (oliverjgoldstein@gmail.com / oliver.goldstein@reuben.o
 
 ## License
 
-Distributed under the terms of the GNU Affero General Public License v3.0 only. See [LICENSE.txt](LICENSE.txt) for details.
+Distributed under the terms of the GNU Affero General Public License v3.0 only. See [LICENSE](LICENSE) for details.
 
 ## LazyPPL Disclaimer
 
