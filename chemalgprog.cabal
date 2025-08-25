@@ -28,6 +28,7 @@ library
         Coordinate
         Group
         Orbital
+        SlaterTypeOrbital
         Parser
         Reaction
         Serialisable
