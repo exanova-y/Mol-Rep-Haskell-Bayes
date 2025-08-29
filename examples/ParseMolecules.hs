@@ -1,6 +1,7 @@
 module Main where
 
-import Parser (parseSDFFile)
+import ParserSingle (parseSDFFileNoLog)
+
 import Molecule (prettyPrintMolecule)
 import Text.Megaparsec (errorBundlePretty)
 
@@ -8,17 +9,13 @@ import Text.Megaparsec (errorBundlePretty)
 main :: IO ()
 main = do
     putStrLn "Parsing benzene.sdf"
-    benzene <- parseSDFFile "molecules/benzene.sdf"
+    benzene <- parseSDFFileNoLog "molecules/benzene.sdf"
     case benzene of
         Left err -> putStrLn $ errorBundlePretty err
-        Right (mol, logS) -> do
-            putStrLn $ "logS: " ++ show logS
-            putStrLn $ prettyPrintMolecule mol
+        Right mol -> putStrLn $ prettyPrintMolecule mol
 
     putStrLn "\nParsing water.sdf"
-    water <- parseSDFFile "molecules/water.sdf"
+    water <- parseSDFFileNoLog "molecules/water.sdf"
     case water of
         Left err -> putStrLn $ errorBundlePretty err
-        Right (mol, logS) -> do
-            putStrLn $ "logS: " ++ show logS
-            putStrLn $ prettyPrintMolecule mol
+        Right mol -> putStrLn $ prettyPrintMolecule mol
