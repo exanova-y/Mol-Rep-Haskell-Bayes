@@ -18,6 +18,8 @@ The accompanying paper describes two illustrative experiments:
 
 Sample SDF files for these experiments are provided in `molecules/` and `logp/`.
 
+An example Haskell representation of a molecule is available in `src/Benzene.hs`, which defines the `benzene` structure programmatically.
+
 Author: Oliver Goldstein (oliverjgoldstein@gmail.com / oliver.goldstein@reuben.ox.ac.uk)
 
 ## License
