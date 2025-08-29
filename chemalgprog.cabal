@@ -34,9 +34,9 @@ library
         Serialisable
         TestInference
         Benzene
+        ParserSingle
     other-modules:
         ExtraF
-        ParserSingle
         LogPModel
         Validator
     hs-source-dirs:
