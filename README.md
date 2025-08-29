@@ -28,6 +28,7 @@ stack exec parse-molecules
 
 The example pretty-prints each molecule's structure using the library parser.
 
+
 Author: Oliver Goldstein (oliverjgoldstein@gmail.com / oliver.goldstein@reuben.ox.ac.uk)
 
 ## License

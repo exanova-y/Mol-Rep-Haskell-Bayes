@@ -1,6 +1,7 @@
 module Main where
 
 import ParserSingle (parseSDFFileNoLog)
+
 import Molecule (prettyPrintMolecule)
 import Text.Megaparsec (errorBundlePretty)
 
