@@ -59,3 +59,9 @@ executables:
     dependencies:
       - chemalgprog
     language: Haskell2010
+  parse-molecules:
+    main: ParseMolecules.hs
+    source-dirs: examples
+    dependencies:
+      - chemalgprog
+    language: Haskell2010
