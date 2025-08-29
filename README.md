@@ -20,6 +20,14 @@ Sample SDF files for these experiments are provided in `molecules/` and `logp/`.
 
 An example Haskell representation of a molecule is available in `src/Benzene.hs`, which defines the `benzene` structure programmatically.
 
+The `examples/ParseMolecules.hs` program shows how to parse the provided `molecules/benzene.sdf` and `molecules/water.sdf` files:
+
+```bash
+stack exec parse-molecules
+```
+
+The example pretty-prints each molecule's structure using the library parser.
+
 Author: Oliver Goldstein (oliverjgoldstein@gmail.com / oliver.goldstein@reuben.ox.ac.uk)
 
 ## License
