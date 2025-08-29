@@ -33,6 +33,7 @@ library
         Reaction
         Serialisable
         TestInference
+        Benzene
     other-modules:
         ExtraF
         ParserSingle
