@@ -21,8 +21,9 @@ extra-source-files:
 
 library
     exposed-modules:
+        Chem.Dietz
+        Chem.Molecule
         LazyPPL
-        Molecule
         Constants
         Distr
         Coordinate
@@ -36,6 +37,7 @@ library
         Benzene
         ParserSingle
     other-modules:
+        Molecule
         ExtraF
         LogPModel
         Validator
