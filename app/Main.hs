@@ -2,7 +2,7 @@ module Main where
 
 import Chem.IO.SDF (readSDF)
 import Chem.Molecule (Molecule, prettyPrintMolecule)
-import Chem.Validate (validateMolecule)
+import Chem.Validate (validateMolecule, ValidationWarning(..))
 import LogPModel (runLogPRegression)
 import Text.Megaparsec (errorBundlePretty)
 
@@ -18,7 +18,8 @@ main = do
         Left errs -> do
           putStrLn "Benzene invalid:"
           mapM_ (putStrLn . show) errs
-        Right _ -> do
+        Right (_, warns) -> do
+          mapM_ (putStrLn . ("Warning: " ++) . show) warns
           putStrLn (prettyPrintMolecule mol)
           putStrLn "Running LogP regression over DB1 and predicting for DB2:"
           runLogPRegression mol 10 20 0.1

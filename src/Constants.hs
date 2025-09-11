@@ -126,21 +126,24 @@ equilibriumBondLengths bondOrder symbol1 symbol2 =
         (3, Fe, Fe) -> mkAngstrom 2.26
         (_, _, _) -> undefined
 
-getMaxBondsSymbol :: AtomicSymbol -> Integer
-getMaxBondsSymbol symbol =
-  case symbol of
-    H -> 1
-    C -> 4
-    N -> 3
-    O -> 2
-    F -> 1
-    P -> 5
-    S -> 6
-    Cl -> 1
-    Br -> 1
-    B -> 3
-    Fe -> 6
-    I -> 1
+-- | Typical minimum and maximum number of electrons used in bonding for
+-- an element.  The second component provides the upper limit used during
+-- validation when checking that an atom does not exceed its usual electron
+-- count.
+nominalValence :: AtomicSymbol -> (Int, Int)
+nominalValence symbol = case symbol of
+    H  -> (2, 2)
+    C  -> (8, 8)
+    N  -> (6, 6)
+    O  -> (4, 4)
+    F  -> (2, 2)
+    P  -> (6, 10)
+    S  -> (4, 12)
+    Cl -> (2, 2)
+    Br -> (2, 2)
+    B  -> (6, 6)
+    Fe -> (0, 12)
+    I  -> (2, 2)
 
 elementAttributes :: AtomicSymbol -> ElementAttributes
 elementAttributes O = ElementAttributes O 8 15.999
