@@ -1,9 +1,10 @@
-
 module Group where
 import Chem.Molecule
 import Chem.Molecule.Coordinate (Coordinate(..), mkAngstrom)
 import Chem.Dietz ()
-import Data.List (transpose)
+
+-- A simple rotation representation for molecules
+-- axis: rotation axis, angle: rotation angle in radians
 
 data MoleculeRotation = MoleculeRotation Molecule Coordinate Double deriving (Show)
 
@@ -16,7 +17,7 @@ instance Group MoleculeRotation where
   mul (MoleculeRotation mol1 axis1 angle1) (MoleculeRotation _ axis2 angle2) =
     combineRotations mol1 axis1 angle1 axis2 angle2
   inv (MoleculeRotation mol axis angle) = MoleculeRotation mol axis (-angle)
-  e (MoleculeRotation mol axis angle) = MoleculeRotation mol (Coordinate (mkAngstrom 0) (mkAngstrom 0) (mkAngstrom 0)) 0 -- Identity rotation
+  e (MoleculeRotation mol _ _) = MoleculeRotation mol (Coordinate (mkAngstrom 0) (mkAngstrom 0) (mkAngstrom 0)) 0 -- Identity rotation
 
 combineRotations :: Molecule -> Coordinate -> Double -> Coordinate -> Double -> MoleculeRotation
-combineRotations = undefined -- For users: implement permutation, symmetry, dihedral group etc. 
+combineRotations mol axis1 angle1 _ angle2 = MoleculeRotation mol axis1 (angle1 + angle2)

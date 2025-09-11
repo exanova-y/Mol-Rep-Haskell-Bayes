@@ -120,7 +120,7 @@ equilibriumBondLengths bondOrder symbol1 symbol2 =
         (3, Fe, N) -> mkAngstrom 1.50
         (3, Fe, B) -> mkAngstrom 1.89
         (3, Fe, Fe) -> mkAngstrom 2.26
-        (_, _, _) -> undefined
+        (_, _, _) -> mkAngstrom 0
 
 -- | Typical minimum and maximum number of electrons used in bonding for
 -- an element.  The second component provides the upper limit used during

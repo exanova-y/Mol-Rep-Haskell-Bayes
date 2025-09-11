@@ -44,6 +44,7 @@ library:
     - Chem.IO.SDF
     - Reaction
     - Serialisable
+    - SampleMolecules
     - Benzene
     - LogPModel
   other-modules:
