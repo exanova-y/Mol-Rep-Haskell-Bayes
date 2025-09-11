@@ -96,27 +96,30 @@ distanceAngstrom a b =
       dz = unAngstrom z1 - unAngstrom z2
   in mkAngstrom (sqrt (dx*dx + dy*dy + dz*dz))
 
--- | Sigma neighbors of a given atom.
-neighborsSigma :: Molecule -> AtomId -> Set AtomId
+-- | Sigma neighbors of a given atom (\963 bonds only).
+neighborsSigma :: Molecule -> AtomId -> [AtomId]
 neighborsSigma m i =
-  S.fromList [ if a == i then b else a
-             | Edge a b <- S.toList (localBonds m)
-             , a == i || b == i]
+  [ if a == i then b else a
+  | Edge a b <- S.toList (localBonds m)
+  , a == i || b == i ]
 
--- | All bonding systems containing a given edge.
-edgeSystems :: Molecule -> Edge -> [BondingSystem]
+-- | All Dietz bonding systems containing a given edge.
+edgeSystems :: Molecule -> Edge -> [SystemId]
 edgeSystems m e =
-  [ bs | bs <- M.elems (systems m), e `S.member` memberEdges bs ]
+  [ sid
+  | (sid, bs) <- M.toList (systems m)
+  , e `S.member` memberEdges bs ]
 
--- | Effective bond order for an edge, combining sigma and delocalised systems.
+-- | Effective bond order for an edge, combining \963 and delocalised systems.
 effectiveOrder :: Molecule -> Edge -> Double
 effectiveOrder m e = sigma + piParts
   where
     sigma = if e `S.member` localBonds m then 1.0 else 0.0
     piParts = sum
-      [ fromIntegral (sharedElectrons bs) /
+      [ let bs = systems m M.! sid in
+        fromIntegral (sharedElectrons bs) /
         (2.0 * fromIntegral (S.size (memberEdges bs)))
-      | bs <- edgeSystems m e ]
+      | sid <- edgeSystems m e ]
 
 -- | Simple pretty printer for molecules.
 prettyPrintMolecule :: Molecule -> String
