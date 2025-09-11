@@ -46,7 +46,13 @@ sdfFile = do
   manyTill anySingle eof
   let atomMap0 = M.fromList [(atomID a, a) | a <- atoms]
       atomMap  = foldl' applyCharge atomMap0 chg
-      mol = Molecule atomMap (S.fromList bonds) M.empty
+      local    = S.fromList [ e | (e, _) <- bonds ]
+      rings    = detectSixRings bonds
+      sysMap   = M.fromList
+        [ (SystemId idx
+          , mkBondingSystem (NonNegative 6) ring (Just "pi_ring"))
+        | (idx, ring) <- zip [1..] rings ]
+      mol = Molecule atomMap local sysMap
   pure mol
   where
     applyCharge m (i,q) = M.adjust (\a -> a { formalCharge = q }) i m
@@ -79,16 +85,17 @@ parseAtom idx _ = do
         Nothing -> fail ("Unknown atomic symbol: " ++ sym)
     _ -> fail "Invalid atom line"
 
--- | Parse a bond line returning an undirected 'Edge'.
-parseBond :: Parser Edge
+-- | Parse a bond line returning an undirected 'Edge' and bond order.
+parseBond :: Parser (Edge, Int)
 parseBond = do
   line <- manyTill anySingle eol
   let ws = words line
   case ws of
-    (a:b:_) ->
+    (a:b:typ:_) ->
       let i = AtomId (read a)
           j = AtomId (read b)
-      in pure (mkEdge i j)
+          t = read typ
+      in pure (mkEdge i j, t)
     _ -> fail "Invalid bond line"
 
 -- | Parse an 'M  CHG' line producing atom/charge pairs.
@@ -130,3 +137,42 @@ foldl' f z xs = go z xs
   where
     go acc []     = acc
     go acc (y:ys) = let acc' = f acc y in acc' `seq` go acc' ys
+
+-- | Detect 6-membered cycles with alternating single and double bonds.
+detectSixRings :: [(Edge, Int)] -> [S.Set Edge]
+detectSixRings bonds = S.toList . S.fromList $ concatMap (findFrom adj) (M.keys adj)
+  where
+    -- adjacency map with bond orders
+    adj = M.unionWith (++) m1 m2
+    m1 = M.fromListWith (++) [ (i, [(j,o)]) | (Edge i j, o) <- bonds ]
+    m2 = M.fromListWith (++) [ (j, [(i,o)]) | (Edge i j, o) <- bonds ]
+
+    findFrom :: M.Map AtomId [(AtomId, Int)] -> AtomId -> [S.Set Edge]
+    findFrom a start = search [start] start Nothing
+      where
+        neighbors v = M.findWithDefault [] v a
+        alt 1 = 2
+        alt 2 = 1
+        alt _ = 0
+
+        search path curr mPrev
+          | length path == 6 =
+              case mPrev of
+                Just prevOrd ->
+                  case lookup start (neighbors curr) of
+                    Just o | o == alt prevOrd ->
+                      let atoms = path ++ [start]
+                          edges = zipWith mkEdge atoms (tail atoms)
+                      in if start == minimum path
+                            then [S.fromList edges]
+                            else []
+                    _ -> []
+                Nothing -> []
+          | otherwise =
+              [ res
+              | (n,o) <- neighbors curr
+              , o `elem` [1,2]
+              , maybe True (\p -> o == alt p) mPrev
+              , n `notElem` path
+              , res <- search (path ++ [n]) n (Just o)
+              ]

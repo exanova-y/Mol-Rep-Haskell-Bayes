@@ -26,6 +26,12 @@ spec = describe "SDF round-trip" $ do
             M.size (atoms mol') `shouldBe` M.size (atoms mol)
             localBonds mol' `shouldBe` localBonds mol
 
+  it "detects one pi bonding system in benzene" $ do
+    parsed <- readSDF "molecules/benzene.sdf"
+    case parsed of
+      Left err -> expectationFailure (errorBundlePretty err)
+      Right mol -> M.size (systems mol) `shouldBe` 1
+
 -- | Minimal V2000 writer sufficient for round-trip testing.
 moleculeToSDF :: Molecule -> String
 moleculeToSDF m = unlines $ header ++ atomLines ++ bondLines ++ ["M  END"]
