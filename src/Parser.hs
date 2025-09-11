@@ -16,6 +16,7 @@ import Constants
 import Orbital
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import Data.List (foldl')
 
 type Parser = Parsec Void String
 
@@ -70,8 +71,9 @@ parseSDFContents = do
     let (atomCount, bondCount, _) = parseCountLine countLine
     atomsList <- zipWithM parseAtom [1..atomCount] (replicate atomCount ())
     bondLines <- count bondCount (manyTill anySingle (try $ string "\n"))
-    let (localB, systems') = buildBondData bondLines
-        atoms = M.fromList [ (atomID a, a) | a <- atomsList ]
+    let atoms = M.fromList [ (atomID a, a) | a <- atomsList ]
+        molecule0 = Molecule atoms S.empty M.empty
+        moleculeWithBonds = applyBondLines molecule0 bondLines
 
     -- Parse the "M END" line and any additional lines
     void $ manyTill anySingle (try $ string ">  <logS>\n")
@@ -85,26 +87,18 @@ parseSDFContents = do
 
     -- Skip the remaining lines
     manyTill anySingle eof
-    return (Molecule atoms localB systems', logSValue)
+    return (moleculeWithBonds, logSValue)
 
-buildBondData :: [String] -> (S.Set Edge, M.Map SystemId BondingSystem)
-buildBondData bondLines =
-    (S.fromList edges, M.fromList systems)
+-- | Insert bonds described by V2000 lines into a molecule via 'addSigma'.
+applyBondLines :: Molecule -> [String] -> Molecule
+applyBondLines = foldl' addBond
   where
-    parsed = map parseBondLine bondLines
-    edges = map fst parsed
-    systems = [ (SystemId i, mkBondingSystem (2*(n-1)) (S.singleton e) Nothing)
-              | ((e,n), i) <- zip parsed [1..], n > 1]
-
-    parseBondLine bondLine =
-        case words bondLine of
-            (a1:a2:orderStr:_) ->
-                let i = read a1
-                    j = read a2
-                    order = read orderStr :: Int
-                    edge = mkEdge (AtomId i) (AtomId j)
-                in (edge, order)
-            _ -> error "Invalid bond line format"
+    addBond m line = case words line of
+      (a1:a2:_) ->
+        let i = AtomId (read a1)
+            j = AtomId (read a2)
+        in addSigma i j m
+      _ -> m
 
 
 
@@ -205,7 +199,9 @@ parseDB1Contents = do
     let (atomCount, bondCount, _) = parseCountLine countLine
     atomsList <- zipWithM parseAtom [1 .. atomCount] (replicate atomCount ())
     bondLines <- count bondCount (manyTill anySingle (try $ string "\n"))
-    let (localB, systems') = buildBondData bondLines
+    let atoms = M.fromList [ (atomID a, a) | a <- atomsList ]
+        molecule0 = Molecule atoms S.empty M.empty
+        moleculeWithBonds = applyBondLines molecule0 bondLines
 
     -- Optionally parse the logP section.
     -- We first use lookAhead to see if the marker is present.
@@ -222,8 +218,7 @@ parseDB1Contents = do
 
     -- Skip the remaining lines until "$$$$\n"
     void $ manyTill anySingle (try $ string "$$$$\n")
-    let atoms = M.fromList [ (atomID a, a) | a <- atomsList ]
-    return (Molecule atoms localB systems', logPValue)
+    return (moleculeWithBonds, logPValue)
 
 parseDB1File :: FilePath -> IO [(Molecule, Double)]
 parseDB1File filePath = do
