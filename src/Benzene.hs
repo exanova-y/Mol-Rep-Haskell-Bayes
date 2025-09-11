@@ -13,7 +13,7 @@ benzene = Molecule
       | (i,sym,x,y,z) <- atomsData
       , let atom = Atom { atomID = AtomId i
                         , attributes = elementAttributes sym
-                        , coordinate = Coordinate (Angstrom x) (Angstrom y) (Angstrom z)
+                        , coordinate = Coordinate (mkAngstrom x) (mkAngstrom y) (mkAngstrom z)
                         , shells     = elementShells sym
                         , formalCharge = 0 }]
   , localBonds = S.fromList (map (uncurry mkEdge') sigmaEdges)

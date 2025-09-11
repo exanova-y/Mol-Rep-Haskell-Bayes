@@ -66,7 +66,7 @@ moleculeModel observed = do
 
   -- Score the model based on the distance to the observed molecule.
   let distance = hausdorffDistance molecule observed
-  score $ normalPdf 0 1 distance
+  score $ normalPdf 0 1 (unAngstrom distance)
 
   return molecule
 
@@ -84,20 +84,20 @@ sampleCoordinate = do
   x <- sample $ normal 0 1
   y <- sample $ normal 0 1
   z <- sample $ normal 0 1
-  return $ Coordinate (Angstrom x) (Angstrom y) (Angstrom z)
+  return $ Coordinate (mkAngstrom x) (mkAngstrom y) (mkAngstrom z)
 
 --------------------------------------------------------------------------------
--- Calculate the Euclidean distance between two coordinates.
-euclideanDistance :: Coordinate -> Coordinate -> Double
+-- Calculate the Euclidean distance between two coordinates, in Angstroms.
+euclideanDistance :: Coordinate -> Coordinate -> Angstrom
 euclideanDistance (Coordinate x1 y1 z1) (Coordinate x2 y2 z2) =
   let dx = unAngstrom x1 - unAngstrom x2
       dy = unAngstrom y1 - unAngstrom y2
       dz = unAngstrom z1 - unAngstrom z2
-  in sqrt (dx*dx + dy*dy + dz*dz)
+  in mkAngstrom (sqrt (dx*dx + dy*dy + dz*dz))
 
 --------------------------------------------------------------------------------
--- Compute the Hausdorff distance between two molecules.
-hausdorffDistance :: Molecule -> Molecule -> Double
+-- Compute the Hausdorff distance between two molecules, returned in Angstroms.
+hausdorffDistance :: Molecule -> Molecule -> Angstrom
 hausdorffDistance mol1 mol2 =
   let coords1 = map coordinate (M.elems (atoms mol1))
       coords2 = map coordinate (M.elems (atoms mol2))

@@ -94,7 +94,7 @@ distanceAngstrom a b =
       dx = unAngstrom x1 - unAngstrom x2
       dy = unAngstrom y1 - unAngstrom y2
       dz = unAngstrom z1 - unAngstrom z2
-  in Angstrom (sqrt (dx*dx + dy*dy + dz*dz))
+  in mkAngstrom (sqrt (dx*dx + dy*dy + dz*dz))
 
 -- | Sigma neighbors of a given atom.
 neighborsSigma :: Molecule -> AtomId -> Set AtomId
