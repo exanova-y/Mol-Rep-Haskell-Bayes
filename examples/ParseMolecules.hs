@@ -4,6 +4,7 @@ import ParserSingle (parseSDFFileNoLog)
 
 import Chem.Molecule (prettyPrintMolecule)
 import Text.Megaparsec (errorBundlePretty)
+import ValidatorDietz (validateMolecule)
 
 -- | Simple example parsing the provided benzene and water SDF files.
 main :: IO ()
@@ -12,10 +13,20 @@ main = do
     benzene <- parseSDFFileNoLog "molecules/benzene.sdf"
     case benzene of
         Left err -> putStrLn $ errorBundlePretty err
-        Right mol -> putStrLn $ prettyPrintMolecule mol
+        Right mol ->
+          case validateMolecule mol of
+            Left errs -> do
+              putStrLn "Benzene invalid:"
+              mapM_ (putStrLn . show) errs
+            Right _ -> putStrLn $ prettyPrintMolecule mol
 
     putStrLn "\nParsing water.sdf"
     water <- parseSDFFileNoLog "molecules/water.sdf"
     case water of
         Left err -> putStrLn $ errorBundlePretty err
-        Right mol -> putStrLn $ prettyPrintMolecule mol
+        Right mol ->
+          case validateMolecule mol of
+            Left errs -> do
+              putStrLn "Water invalid:"
+              mapM_ (putStrLn . show) errs
+            Right _ -> putStrLn $ prettyPrintMolecule mol

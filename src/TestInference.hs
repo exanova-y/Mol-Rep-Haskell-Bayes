@@ -13,7 +13,7 @@ import Distr
 import Control.Monad
 import ExtraF
 import Constants
-import Validator
+import ValidatorDietz (validateMolecule)
 import Text.Printf (printf)
 import Data.Monoid (Product(..))
 import Numeric.Log (Log)
@@ -122,7 +122,9 @@ main :: IO ()
 main = do
   observed <- observedMoleculeIO
   case validateMolecule observed of
-    Left err -> putStrLn $ "Invalid observed molecule: " ++ err
+    Left errs -> do
+      putStrLn "Invalid observed molecule:"
+      mapM_ (putStrLn . show) errs
     Right validObserved -> do
       putStrLn "Observed molecule is valid. Proceeding with sampling..."
       samples <- mh 0.1 (moleculeModel validObserved)
