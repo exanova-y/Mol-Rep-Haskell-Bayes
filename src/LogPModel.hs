@@ -24,9 +24,9 @@ moleculeWeight = Prelude.sum . map (atomicWeight . attributes) . M.elems . atoms
 moleculeSurfaceArea :: Molecule -> Double
 moleculeSurfaceArea mol = let size = moleculeSize mol in 4.0 * pi * (size ** (2.0/3.0))
 
--- | Compute the total bond order of a molecule
-moleculeBondOrder :: Molecule -> Double
-moleculeBondOrder m =
+-- | Compute the total effective bond order of a molecule
+totalEffectiveOrder :: Molecule -> Double
+totalEffectiveOrder m =
   let edgeSet = localBonds m `S.union` S.unions (map memberEdges (M.elems (systems m)))
   in sum [ effectiveOrder m e | e <- S.toList edgeSet ]
 
@@ -44,7 +44,7 @@ logPModel (mol, observedLogP) = do
   let size = moleculeSize mol
   let weight = moleculeWeight mol
   let surfaceArea = moleculeSurfaceArea mol
-  let bondOrder = moleculeBondOrder mol
+  let bondOrder = totalEffectiveOrder mol
 
   -- Predict logP value using a linear combination of features
   let predictedLogP = intercept +
@@ -128,7 +128,7 @@ main testMol numMol burnIn samplesize jitter = do
     let size = moleculeSize testMol
     let weight = moleculeWeight testMol
     let surfaceArea = moleculeSurfaceArea testMol
-    let bondOrder = moleculeBondOrder testMol
+    let bondOrder = totalEffectiveOrder testMol
 
     let predictedLogP = intercept +
                         sizeCoeff * size +
@@ -148,7 +148,7 @@ main testMol numMol burnIn samplesize jitter = do
         let size = moleculeSize mol
         let weight = moleculeWeight mol
         let surfaceArea = moleculeSurfaceArea mol
-        let bondOrder = moleculeBondOrder mol
+        let bondOrder = totalEffectiveOrder mol
         
         let predictedLogP = intercept +
                             sizeCoeff * size +

@@ -3,7 +3,6 @@ module TestInference where
 
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Data.Maybe (catMaybes)
 import Data.List (tails)
 import Chem.Molecule
 import Chem.Dietz
@@ -46,23 +45,11 @@ moleculeModel observed = do
                   , formalCharge = 0 }
   let atomsList = zipWith (\i atom -> atom { atomID = AtomId i }) [1..] atomsUnnumbered
       atomIDs = map atomID atomsList
-  let possiblePairs = [(i, j) | (i:rest) <- tails atomIDs, j <- rest]
-  bondsMaybe <- mapM (\pair@(i,j) -> do
-                         includeBond <- sample $ uniformD [True, False]
-                         if includeBond
-                           then do
-                             order <- sample $ uniformD [1,2,3]
-                             let edge = mkEdge i j
-                             return $ Just (edge, order)
-                           else return Nothing)
-                      possiblePairs
-  let edgesWithOrder = catMaybes bondsMaybe
-      localB = S.fromList [e | (e, _) <- edgesWithOrder]
-      systems' = M.fromList
-        [ (SystemId idx, mkBondingSystem (2*(o-1)) (S.singleton e) Nothing)
-        | ((e,o), idx) <- zip edgesWithOrder [1..], o > 1]
       atoms = M.fromList [ (atomID a, a) | a <- atomsList ]
-      molecule = Molecule { atoms = atoms, localBonds = localB, systems = systems' }
+      initialMol = Molecule { atoms = atoms, localBonds = S.empty, systems = M.empty }
+      possiblePairs = [(i, j) | (i:rest) <- tails atomIDs, j <- rest]
+
+  (molecule, _) <- foldM sampleBond (initialMol, 1) possiblePairs
 
   -- Score the model based on the distance to the observed molecule.
   let distance = hausdorffDistance molecule observed
@@ -87,25 +74,32 @@ sampleCoordinate = do
   return $ Coordinate (mkAngstrom x) (mkAngstrom y) (mkAngstrom z)
 
 --------------------------------------------------------------------------------
--- Calculate the Euclidean distance between two coordinates, in Angstroms.
-euclideanDistance :: Coordinate -> Coordinate -> Angstrom
-euclideanDistance (Coordinate x1 y1 z1) (Coordinate x2 y2 z2) =
-  let dx = unAngstrom x1 - unAngstrom x2
-      dy = unAngstrom y1 - unAngstrom y2
-      dz = unAngstrom z1 - unAngstrom z2
-  in mkAngstrom (sqrt (dx*dx + dy*dy + dz*dz))
-
---------------------------------------------------------------------------------
 -- Compute the Hausdorff distance between two molecules, returned in Angstroms.
 hausdorffDistance :: Molecule -> Molecule -> Angstrom
 hausdorffDistance mol1 mol2 =
-  let coords1 = map coordinate (M.elems (atoms mol1))
-      coords2 = map coordinate (M.elems (atoms mol2))
-      -- For each atom in mol1, find the distance to the closest atom in mol2.
-      d1 = [minimum [euclideanDistance c1 c2 | c2 <- coords2] | c1 <- coords1]
-      -- For each atom in mol2, find the distance to the closest atom in mol1.
-      d2 = [minimum [euclideanDistance c2 c1 | c1 <- coords1] | c2 <- coords2]
-  in max (maximum d1) (maximum d2)
+  let atoms1 = M.elems (atoms mol1)
+      atoms2 = M.elems (atoms mol2)
+      d1 = [minimum [distanceAngstrom a1 a2 | a2 <- atoms2] | a1 <- atoms1]
+      d2 = [minimum [distanceAngstrom a2 a1 | a1 <- atoms1] | a2 <- atoms2]
+  in maximum (d1 ++ d2)
+
+--------------------------------------------------------------------------------
+-- | Sample a sigma bond and optional BondingSystem between two atoms.
+sampleBond :: (Molecule, Int) -> (AtomId, AtomId) -> Meas (Molecule, Int)
+sampleBond (m, sid) (i, j) = do
+  includeBond <- sample $ uniformD [True, False]
+  if includeBond
+    then do
+      order <- sample $ uniformD [1,2,3]
+      let mSigma = addSigma i j m
+          (systems', sid') =
+            if order > 1
+              then let edge = mkEdge i j
+                       bs = mkBondingSystem (2*(order-1)) (S.singleton edge) Nothing
+                   in (M.insert (SystemId sid) bs (systems mSigma), sid + 1)
+              else (systems mSigma, sid)
+      return (mSigma { systems = systems' }, sid')
+    else return (m, sid)
 
 --------------------------------------------------------------------------------
 -- | Pretty print a list of weights with their indices.
