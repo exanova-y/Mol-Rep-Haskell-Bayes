@@ -5,7 +5,7 @@ import Test.QuickCheck
 import Benzene (benzene)
 import Chem.Molecule
 import Chem.Dietz
-import ValidatorDietz (validateMolecule)
+import Chem.Validate (validateMolecule, usedElectronsAt)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 
@@ -42,24 +42,14 @@ prop_permInvariant = forAll genPerm $ \perm ->
     isRight (Right _) = True
     isRight _         = False
 
--- Electron participation of atom v in bonding system bs.
-ePart :: AtomId -> BondingSystem -> Double
-ePart v bs =
-  let degSv = fromIntegral $ length
-                [ ()
-                | Edge a b <- S.toList (memberEdges bs)
-                , a == v || b == v ]
-      s = fromIntegral (sharedElectrons bs)
-      totalEdges = fromIntegral (S.size (memberEdges bs))
-  in if totalEdges == 0 then 0 else s * degSv / (2 * totalEdges)
-
 -- Property: each ring carbon gains 1 e- from the pi system plus sigma contributions.
 prop_benzeneElectronAccounting :: Property
 prop_benzeneElectronAccounting = conjoin
   [ counterexample ("Atom " ++ show i) $
-      let sigma = fromIntegral (length (neighborsSigma benzene i))
-          system = sum [ ePart i bs | bs <- M.elems (systems benzene) ]
-      in system === 1.0 .&&. sigma + system === 4.0
+      let sigma  = fromIntegral (length (neighborsSigma benzene i))
+          total  = usedElectronsAt benzene i
+          system = total - sigma
+      in system === 1.0 .&&. total === 4.0
   | i <- ringCarbons ]
   where
     ringCarbons = map AtomId [1..6]

@@ -34,6 +34,7 @@ library:
   exposed-modules:
     - Chem.Dietz
     - Chem.Molecule
+    - Chem.Validate
     - LazyPPL
     - Constants
     - Distr
@@ -49,7 +50,6 @@ library:
   other-modules:
     - ExtraF
     - LogPModel
-    - ValidatorDietz
   language: Haskell2010
 
 executables:

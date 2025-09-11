@@ -5,7 +5,7 @@ import ParserSingle (parseSDFFileNoLog)
 import Chem.Molecule (prettyPrintMolecule)
 import Chem.Dietz ()
 import Text.Megaparsec (errorBundlePretty)
-import ValidatorDietz (validateMolecule)
+import Chem.Validate (validateMolecule)
 
 -- | Simple example parsing the provided benzene and water SDF files.
 main :: IO ()
