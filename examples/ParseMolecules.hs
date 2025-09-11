@@ -1,6 +1,6 @@
 module Main where
 
-import ParserSingle (parseSDFFileNoLog)
+import Chem.IO.SDF (readSDF)
 
 import Chem.Molecule (prettyPrintMolecule)
 import Chem.Dietz ()
@@ -11,7 +11,7 @@ import Chem.Validate (validateMolecule)
 main :: IO ()
 main = do
     putStrLn "Parsing benzene.sdf"
-    benzene <- parseSDFFileNoLog "molecules/benzene.sdf"
+    benzene <- readSDF "molecules/benzene.sdf"
     case benzene of
         Left err -> putStrLn $ errorBundlePretty err
         Right mol ->
@@ -22,7 +22,7 @@ main = do
             Right _ -> putStrLn $ prettyPrintMolecule mol
 
     putStrLn "\nParsing water.sdf"
-    water <- parseSDFFileNoLog "molecules/water.sdf"
+    water <- readSDF "molecules/water.sdf"
     case water of
         Left err -> putStrLn $ errorBundlePretty err
         Right mol ->

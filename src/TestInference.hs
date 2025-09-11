@@ -8,7 +8,7 @@ import Chem.Molecule
 import Chem.Molecule.Coordinate (Coordinate(..), Angstrom(..), mkAngstrom, unAngstrom)
 import Chem.Dietz
 import LazyPPL
-import Parser
+import Chem.IO.SDF (readSDF)
 import Distr
 import Control.Monad
 import ExtraF
@@ -17,17 +17,18 @@ import Chem.Validate (validateMolecule)
 import Text.Printf (printf)
 import Data.Monoid (Product(..))
 import Numeric.Log (Log)
+import Text.Megaparsec (errorBundlePretty)
 
 
 --------------------------------------------------------------------------------
 -- | Read the observed molecule from file.
 observedMoleculeIO :: IO Molecule
 observedMoleculeIO = do
-  let db1FilePath = "./molecules/water.sdf"
-  moleculesWithLogP <- parseDB1File db1FilePath
-  case moleculesWithLogP of
-    [] -> error "No molecule found in file!"
-    ((molecule, _):_) -> return molecule
+  let fp = "./molecules/water.sdf"
+  result <- readSDF fp
+  case result of
+    Left err      -> error (errorBundlePretty err)
+    Right molecule -> return molecule
 
 --------------------------------------------------------------------------------
 -- | A generative model for a molecule that takes an observed molecule for scoring.
