@@ -13,7 +13,7 @@ import Distr
 import Control.Monad
 import ExtraF
 import Constants
-import ValidatorDietz (validateMolecule)
+import Chem.Validate (validateMolecule)
 import Text.Printf (printf)
 import Data.Monoid (Product(..))
 import Numeric.Log (Log)
