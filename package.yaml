@@ -48,6 +48,7 @@ library:
     - LogPModel
   other-modules:
     - ExtraF
+    - Chem.Molecule.Coordinate
   language: Haskell2010
 
 executables:
