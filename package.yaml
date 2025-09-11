@@ -37,7 +37,6 @@ library:
     - LazyPPL
     - Constants
     - Distr
-    - Coordinate
     - Group
     - Orbital
     - SlaterTypeOrbital

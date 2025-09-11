@@ -1,7 +1,7 @@
 module Orbital where 
 
 import Data.Maybe
-import Coordinate
+import Chem.Molecule (Coordinate(..), mkAngstrom)
 
 -- Basic orbital types
 data So = So 
@@ -26,12 +26,15 @@ data PureOrbital = PureSo So
 
 -- The Orbital type now includes an extra field for hybrid components.
 -- For a pure orbital, `hybridComponents` is Nothing.
-data Orbital subshellType = Orbital 
+data Orbital subshellType = Orbital
   { orbitalType      :: subshellType
   , electronCount    :: Int
   , orientation      :: Maybe Coordinate
   , hybridComponents :: Maybe [(Double, PureOrbital)]
   } deriving (Show, Eq, Read)
+
+angCoord :: Double -> Double -> Double -> Coordinate
+angCoord x y z = Coordinate (mkAngstrom x) (mkAngstrom y) (mkAngstrom z)
 
 -- A SubShell is a list of Orbitals all having the same subshell type.
 newtype SubShell subshellType = SubShell 
@@ -97,12 +100,12 @@ carbon =
       , pSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -139,17 +142,17 @@ nitrogen =
       , pSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -186,17 +189,17 @@ oxygen =
       , pSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -233,7 +236,7 @@ boron =
       , pSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -270,17 +273,17 @@ iron =
       , pSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -299,44 +302,44 @@ iron =
       , pSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
       , dSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = Dxy
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)
+                                    , orientation      = Just (angCoord (1/sqrt 2) (1/sqrt 2) 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dyz
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))
+                                    , orientation      = Just (angCoord 0 (1/sqrt 2) (1/sqrt 2))
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dxz
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))
+                                    , orientation      = Just (angCoord (1/sqrt 2) 0 (1/sqrt 2))
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dx2y2
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)
+                                    , orientation      = Just (angCoord (1/sqrt 2) (-1/sqrt 2) 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dz2
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -385,17 +388,17 @@ chlorine =
       , pSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -414,17 +417,17 @@ chlorine =
       , pSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -461,17 +464,17 @@ fluorine =
       , pSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -508,17 +511,17 @@ sulfur =
       , pSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -537,17 +540,17 @@ sulfur =
       , pSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -584,17 +587,17 @@ bromine =
       , pSubShell = Just (SubShell
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -613,44 +616,44 @@ bromine =
       , pSubShell = Just (SubShell
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
       , dSubShell = Just (SubShell
                           [ Orbital { orbitalType      = Dxy
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)
+                                    , orientation      = Just (angCoord (1/sqrt 2) (1/sqrt 2) 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dyz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))
+                                    , orientation      = Just (angCoord 0 (1/sqrt 2) (1/sqrt 2))
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dxz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))
+                                    , orientation      = Just (angCoord (1/sqrt 2) 0 (1/sqrt 2))
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dx2y2
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)
+                                    , orientation      = Just (angCoord (1/sqrt 2) (-1/sqrt 2) 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dz2
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -668,12 +671,12 @@ bromine =
       , pSubShell = Just (SubShell
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
@@ -715,17 +718,17 @@ phosphorus =
       , pSubShell = Just (SubShell
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -744,17 +747,17 @@ phosphorus =
       , pSubShell = Just (SubShell
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -791,17 +794,17 @@ iodine =
       , pSubShell = Just (SubShell
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -820,44 +823,44 @@ iodine =
       , pSubShell = Just (SubShell
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
       , dSubShell = Just (SubShell
                           [ Orbital { orbitalType      = Dxy
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)
+                                    , orientation      = Just (angCoord (1/sqrt 2) (1/sqrt 2) 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dyz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))
+                                    , orientation      = Just (angCoord 0 (1/sqrt 2) (1/sqrt 2))
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dxz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))
+                                    , orientation      = Just (angCoord (1/sqrt 2) 0 (1/sqrt 2))
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dx2y2
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)
+                                    , orientation      = Just (angCoord (1/sqrt 2) (-1/sqrt 2) 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dz2
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -875,44 +878,44 @@ iodine =
       , pSubShell = Just (SubShell
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
       , dSubShell = Just (SubShell
                           [ Orbital { orbitalType      = Dxy
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate (1/sqrt 2) (1/sqrt 2) 0)
+                                    , orientation      = Just (angCoord (1/sqrt 2) (1/sqrt 2) 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dyz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 (1/sqrt 2) (1/sqrt 2))
+                                    , orientation      = Just (angCoord 0 (1/sqrt 2) (1/sqrt 2))
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dxz
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate (1/sqrt 2) 0 (1/sqrt 2))
+                                    , orientation      = Just (angCoord (1/sqrt 2) 0 (1/sqrt 2))
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dx2y2
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate (1/sqrt 2) (-1/sqrt 2) 0)
+                                    , orientation      = Just (angCoord (1/sqrt 2) (-1/sqrt 2) 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Dz2
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , orientation      = Just (angCoord 0 0 1)
                                     , hybridComponents = Nothing
                                     }
                           ])
@@ -930,12 +933,12 @@ iodine =
       , pSubShell = Just (SubShell
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
-                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , orientation      = Just (angCoord 1 0 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Py
                                     , electronCount    = 1
-                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , orientation      = Just (angCoord 0 1 0)
                                     , hybridComponents = Nothing
                                     }
                           , Orbital { orbitalType      = Pz

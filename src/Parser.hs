@@ -136,7 +136,7 @@ parseAtom atomicID _ = do
     charge <- parseCharge 
 
     manyTill anySingle (try $ string "\n")
-    return $ makeAtom atomicID (symbol, Coordinate (Angstrom x) (Angstrom y) (Angstrom z))
+    return $ makeAtom atomicID (symbol, Coordinate (mkAngstrom x) (mkAngstrom y) (mkAngstrom z))
     
 parseDouble :: Parser Double
 parseDouble = do

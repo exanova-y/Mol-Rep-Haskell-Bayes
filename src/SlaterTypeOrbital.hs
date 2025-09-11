@@ -1,7 +1,7 @@
 module SlaterTypeOrbital where
 
 import Orbital (PureOrbital(..))
-import Coordinate
+import Chem.Molecule (Coordinate(..), mkAngstrom)
 import LazyPPL (Prob, Meas, sample)
 import Distr (gamma, uniformbounded)
 
@@ -45,4 +45,4 @@ sampleCoordinate sto = do
   let x = r * sin phi * cos theta
       y = r * sin phi * sin theta
       z = r * cos phi
-  return (Coordinate x y z)
+  return (Coordinate (mkAngstrom x) (mkAngstrom y) (mkAngstrom z))

@@ -95,7 +95,7 @@ parseAtom atomicID _ = do
     space
     _ <- parseCharge  -- charge is parsed but ignored
     manyTill anySingle newline
-    return $ makeAtom atomicID (symbol, Coordinate (Angstrom x) (Angstrom y) (Angstrom z))
+    return $ makeAtom atomicID (symbol, Coordinate (mkAngstrom x) (mkAngstrom y) (mkAngstrom z))
 
 -- | Parse a double number.
 parseDouble :: Parser Double
