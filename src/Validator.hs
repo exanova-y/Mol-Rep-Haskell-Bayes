@@ -37,12 +37,16 @@ validateMolecule molecule = do
         Left $ "System references non-existent atoms: " ++ show (i,j)
 
   -- Check 4: Verify each atom's total bond order does not exceed its capacity.
-  let allEdges = localBonds molecule `S.union`
-                 S.unions (map memberEdges (M.elems (systems molecule)))
   forM_ atomIDsList $ \i -> do
-    let order = sum [ effectiveOrder molecule e
-                    | e@(Edge a b) <- S.toList allEdges
-                    , a == i || b == i]
+    -- sigma bonds directly incident on i
+    let sigmaEdges  = [ mkEdge i j | j <- neighborsSigma molecule i ]
+        -- edges from delocalised systems involving i
+        systemEdges = [ e
+                      | bs <- M.elems (systems molecule)
+                      , e@(Edge a b) <- S.toList (memberEdges bs)
+                      , a == i || b == i ]
+        order = sum [ effectiveOrder molecule e
+                    | e <- sigmaEdges ++ systemEdges ]
         atom = atoms molecule M.! i
         maxBonds = fromIntegral (getMaxBondsSymbol (symbol (attributes atom)))
     when (order > maxBonds) $
