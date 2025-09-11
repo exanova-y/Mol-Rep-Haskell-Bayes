@@ -2,15 +2,44 @@ module LogPModel where
 
 import Chem.Molecule
 import Chem.Dietz
+import Chem.IO.SDF (parseSDF)
 import Distr
 import LazyPPL
 import Control.Monad
-import Numeric.Log
-import Parser
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import Data.Maybe (mapMaybe)
+import Data.List (isPrefixOf, break)
+import Text.Read (readMaybe)
 import ExtraF
 
+
+-- | Parse an SDF database where each molecule has a <logP> property.
+parseLogPFile :: FilePath -> IO [(Molecule, Double)]
+parseLogPFile fp = do
+  txt <- readFile fp
+  let blocks = splitBlocks (lines txt)
+  pure (mapMaybe parseBlock blocks)
+  where
+    parseBlock ls =
+      let blockTxt = unlines ls
+          mMol    = parseSDF blockTxt
+          mLogP   = extractLogP ls
+      in case (mMol, mLogP) of
+           (Right mol, Just lp) -> Just (mol, lp)
+           _                    -> Nothing
+
+    extractLogP ls =
+      case dropWhile (not . isPrefixOf ">  <logP>") ls of
+        (_:val:_) -> readMaybe val
+        _         -> Nothing
+
+    splitBlocks [] = []
+    splitBlocks xs =
+      let (pre, rest) = break (== "$$$$") xs
+      in pre : case rest of
+                 []      -> []
+                 (_:ys) -> splitBlocks ys
 
 -- | A simple feature extraction function that counts the number of atoms in a molecule
 moleculeSize :: Molecule -> Double
@@ -94,30 +123,28 @@ fth5 (_, _, _, x, _) = x
 fifth :: (a, b, c, d, e) -> e
 fifth (_, _, _, _, x) = x
 
-main :: Molecule -> Int -> Int -> Int -> Double -> IO ()
-main testMol numMol burnIn samplesize jitter = do
-    let db1FilePath = "./logp/QuickDB1.sdf"
-    db1Molecules <- parseDB1File db1FilePath
+-- | Run Metropolis-Hastings regression over all molecules in DB1 and
+-- predict logP for DB2 molecules.
+runLogPRegression :: Molecule -> Int -> Int -> Double -> IO ()
+runLogPRegression testMol burnIn sampleSize jitter = do
+    let db1FilePath = "./logp/DB1.sdf"
+    db1Molecules <- parseLogPFile db1FilePath
     putStrLn $ "Parsed " ++ show (length db1Molecules) ++ " molecules from file: " ++ db1FilePath
-    
-    -- Take the first 100 molecules
-    let observedData = take numMol db1Molecules
-    
-    -- Run inference
-    inferredSamples <- mh jitter (inferLogP observedData)
-    
+
+    -- Run inference on all molecules
+    inferredSamples <- mh jitter (inferLogP db1Molecules)
+
     -- Take the last n elements of the list
-    let lastNSamples = map pointwiseMean $ take samplesize $ drop burnIn $ map (\(xs, _) -> xs) inferredSamples
-    
+    let lastNSamples = map pointwiseMean $ take sampleSize $ drop burnIn $ map (\(xs, _) -> xs) inferredSamples
+
     -- Average the mean coefficients pointwise again
     let means = pointwiseMean lastNSamples
-    
+
     let intercept = fst5 means
     let sizeCoeff = snd5 means
     let weightCoeff = thd5 means
     let surfaceAreaCoeff = fth5 means
     let bondOrderCoeff = fifth means
-    -- -- Print the mean coefficients and the pointwise mean of mean coefficients
     putStrLn $ "Mean Intercept: " ++ show intercept
     putStrLn $ "Mean Size Coefficient: " ++ show sizeCoeff
     putStrLn $ "Mean Weight Coefficient: " ++ show weightCoeff
@@ -139,22 +166,22 @@ main testMol numMol burnIn samplesize jitter = do
 
     -- Open the DB2.sdf file and process each molecule
     let db2FilePath = "./logp/DB2.sdf"
-    db2Molecules <- parseDB1File db2FilePath
+    db2Molecules <- parseLogPFile db2FilePath
     putStrLn $ "Parsed " ++ show (length db2Molecules) ++ " molecules from file: " ++ db2FilePath
-    
+
     putStrLn "Predicted and Actual LogP values for DB2 molecules:"
     forM_ db2Molecules $ \(mol, actualLogP) -> do
         let size = moleculeSize mol
         let weight = moleculeWeight mol
         let surfaceArea = moleculeSurfaceArea mol
         let bondOrder = moleculeBondOrder mol
-        
+
         let predictedLogP = intercept +
                             sizeCoeff * size +
                             weightCoeff * weight +
                             surfaceAreaCoeff * surfaceArea +
                             bondOrderCoeff * bondOrder
-        
+
         putStrLn $ "Molecule: " ++ show mol
         putStrLn $ "Predicted LogP: " ++ show predictedLogP
         putStrLn $ "Actual LogP: " ++ show actualLogP

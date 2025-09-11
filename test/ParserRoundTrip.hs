@@ -4,7 +4,6 @@ module Main (main) where
 import Test.Hspec
 import Chem.IO.SDF (readSDF, parseSDF)
 import Chem.Molecule
-import Chem.Molecule.Coordinate (Coordinate(..), unAngstrom)
 import Chem.Dietz
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S

@@ -13,10 +13,9 @@ stack exec chemalgprog
 
 The accompanying paper describes two illustrative experiments:
 
-- **Molecular inference** – Metropolis–Hastings sampling of a three‑atom molecule scored against an observed structure. Running `stack exec chemalgprog` reproduces this experiment using `molecules/water.sdf`.
-- **LogP regression** – Estimating partition coefficients from simple molecular features. After building, open a REPL with `stack exec -- ghci` and evaluate `LogPModel.main` to rerun the regression on the SDF files in `logp/`.
+- **LogP regression** – `stack exec chemalgprog` parses and validates `molecules/benzene.sdf`, then performs a Metropolis–Hastings regression over the molecules in `logp/DB1.sdf` to fit coefficients predicting the partition coefficient (logP). The learned model is applied to the molecules in `logp/DB2.sdf` and prints both predicted and observed values.
 
-Sample SDF files for these experiments are provided in `molecules/` and `logp/`.
+Sample SDF files for this experiment are provided in `molecules/` and `logp/`.
 
 An example Haskell representation of a molecule is available in `src/Benzene.hs`, which defines the `benzene` structure programmatically.
 
@@ -41,35 +40,6 @@ The probabilistic programming components (`LazyPPL.hs` and `Distr.hs`) are taken
 
 ## What the Program Does
 
-The entrypoint `app/Main.hs` simply delegates to `TestInference.main`, so the core behavior is defined in `src/TestInference.hs`.
-
-At startup, `TestInference.main`:
-
-1. **Loads and validates data**
-   - Reads the observed molecule from `molecules/water.sdf`.
-   - Runs a validation check on the input structure.
-
-2. **Defines a probabilistic model**
-   - The model (`moleculeModel`) randomly samples atoms, bonds, and coordinates for a **3-atom molecule**.
-   - It then scores the generated structure by comparing its geometry to the observed molecule using:
-     - **Hausdorff distance** (shape similarity).
-     - A **normal likelihood** on that distance.
-
-3. **Runs Metropolis–Hastings inference**
-   - Uses `mh 0.1` from the `LazyPPL` module (random-walk MCMC).
-   - At each step:
-     - Mutates random sites in the generative program.
-     - Re-evaluates the model.
-     - Accepts or rejects proposals via the MH acceptance ratio.
-
-4. **Collects samples**
-   - Drops the first **60000 draws** (burn-in).
-   - Takes the next **2000 (molecule, weight) pairs**.
-   - Prints the results.
-
----
-
-**In short:**  
-The executable performs **Metropolis–Hastings MCMC** to sample molecular structures that are consistent with the observed “water” molecule, according to the probabilistic model in `moleculeModel`.
+The `chemalgprog` executable parses the sample benzene molecule (`molecules/benzene.sdf`), validates it with `Chem.Validate`, pretty‑prints the structure, and then runs the `LogPModel` regression. Coefficients are inferred from the training set `logp/DB1.sdf` and used to predict logP values for the molecules in `logp/DB2.sdf`. The `parse-molecules` example demonstrates parsing and validating multiple SDF files.
 
 
