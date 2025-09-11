@@ -11,6 +11,7 @@ import System.Directory
 import System.FilePath
 import Control.Monad
 import Chem.Molecule
+import Chem.Molecule.Coordinate (Coordinate(..), mkAngstrom)
 import Chem.Dietz
 import Constants
 import Orbital

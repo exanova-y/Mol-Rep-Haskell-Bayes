@@ -9,8 +9,7 @@
 module Chem.Molecule
   ( -- * Core types
     AtomicSymbol(..), ElementAttributes(..)
-  , Angstrom(..), mkAngstrom, unAngstrom
-  , Coordinate(..)
+  , module Chem.Molecule.Coordinate
   , Shells(..)
   , Atom(..)
   , Molecule(..)
@@ -31,6 +30,7 @@ import qualified Data.Set as S
 import           Data.List (intercalate)
 
 import           Chem.Dietz
+import           Chem.Molecule.Coordinate
 
 -- ===== Element + units =====
 
@@ -41,21 +41,6 @@ data ElementAttributes = ElementAttributes
   { symbol       :: AtomicSymbol
   , atomicNumber :: Int
   , atomicWeight :: Double
-  } deriving (Eq, Show, Read, Generic)
-
--- Distances in Angstroms
-newtype Angstrom = Angstrom Double
-  deriving (Eq, Ord, Show, Read, Generic)
-
-mkAngstrom :: Double -> Angstrom
-mkAngstrom = Angstrom
-
-unAngstrom :: Angstrom -> Double
-unAngstrom (Angstrom d) = d
-
--- Cartesian coordinates in Angstroms
-data Coordinate = Coordinate
-  { x :: Angstrom, y :: Angstrom, z :: Angstrom
   } deriving (Eq, Show, Read, Generic)
 
 -- Placeholder (keep/extend your existing electronic structure ADT if desired)

@@ -5,6 +5,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.List (tails)
 import Chem.Molecule
+import Chem.Molecule.Coordinate (Coordinate(..), Angstrom(..), mkAngstrom, unAngstrom)
 import Chem.Dietz
 import LazyPPL
 import Parser

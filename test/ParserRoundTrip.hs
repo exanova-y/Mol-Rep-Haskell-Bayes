@@ -4,6 +4,7 @@ module Main (main) where
 import Test.Hspec
 import ParserSingle (parseSDFFileNoLog, parseSDFContentsNoLog)
 import Chem.Molecule
+import Chem.Molecule.Coordinate (Coordinate(..), unAngstrom)
 import Chem.Dietz
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S

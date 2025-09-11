@@ -1,6 +1,7 @@
 
 module Group where
 import Chem.Molecule
+import Chem.Molecule.Coordinate (Coordinate(..), mkAngstrom)
 import Chem.Dietz ()
 import Data.List (transpose)
 
