@@ -65,3 +65,14 @@ executables:
     dependencies:
       - chemalgprog
     language: Haskell2010
+
+tests:
+  parser-roundtrip:
+    main: ParserRoundTrip.hs
+    source-dirs: test
+    dependencies:
+      - chemalgprog
+      - hspec
+      - containers
+      - megaparsec >= 9.0 && < 10.0
+    language: Haskell2010

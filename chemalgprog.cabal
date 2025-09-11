@@ -111,3 +111,16 @@ executable parse-molecules
         array,
         chemalgprog
 
+test-suite parser-roundtrip
+    type: exitcode-stdio-1.0
+    main-is: ParserRoundTrip.hs
+    hs-source-dirs:
+        test
+    default-language: Haskell2010
+    build-depends:
+        base >=4.13 && <4.21,
+        containers,
+        megaparsec >=9.0 && <10.0,
+        hspec,
+        chemalgprog
+

@@ -13,6 +13,7 @@ import Constants
 import Orbital
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import Data.List (foldl')
 
 -- | The parser type alias.
 type Parser = Parsec Void String
@@ -33,15 +34,16 @@ parseSDFContentsNoLog = do
     let (atomCount, bondCount, _) = parseCountLine countLine
     -- Parse the atoms.
     atomsList <- zipWithM parseAtom [1..atomCount] (replicate atomCount ())
-    -- Parse the bond lines.
+    -- Parse the bond lines and insert as \963 edges.
     bondLines <- count bondCount (manyTill anySingle newline)
-    let (localB, systems') = buildBondData bondLines
-        atoms = M.fromList [ (atomID a, a) | a <- atomsList ]
+    let atoms = M.fromList [ (atomID a, a) | a <- atomsList ]
+        molecule0 = Molecule atoms S.empty M.empty
+        moleculeWithBonds = applyBondLines molecule0 bondLines
     -- Skip until the "M  END" marker.
     void $ manyTill anySingle (try (string "M  END"))
     -- Skip the remainder of the file.
     void $ manyTill anySingle eof
-    return (Molecule atoms localB systems')
+    return moleculeWithBonds
 
 -- | Parse an SDF file from the given file path and return a Molecule.
 parseSDFFileNoLog :: FilePath -> IO (Either (ParseErrorBundle String Void) Molecule)
@@ -53,25 +55,16 @@ parseSDFFileNoLog filePath = do
 -- Helper Functions
 --------------------------------------------------------------------------------
 
--- | Build a bond matrix from the bond lines.
-buildBondData :: [String] -> (S.Set Edge, M.Map SystemId BondingSystem)
-buildBondData bondLines =
-    (S.fromList edges, M.fromList systems)
+-- | Insert bonds described by V2000 lines into a molecule via 'addSigma'.
+applyBondLines :: Molecule -> [String] -> Molecule
+applyBondLines = foldl' addBond
   where
-    parsed = map parseBondLine bondLines
-    edges  = map fst parsed
-    systems = [ (SystemId i, mkBondingSystem (2*(n-1)) (S.singleton e) Nothing)
-              | ((e,n), i) <- zip parsed [1..], n > 1]
-
-    parseBondLine bondLine =
-        case words bondLine of
-            (a1:a2:orderStr:_) ->
-                let i = read a1
-                    j = read a2
-                    order = read orderStr :: Int
-                    edge = mkEdge (AtomId i) (AtomId j)
-                in (edge, order)
-            _ -> error "Invalid bond line format"
+    addBond m line = case words line of
+      (a1:a2:_) ->
+        let i = AtomId (read a1)
+            j = AtomId (read a2)
+        in addSigma i j m
+      _ -> m
 
 -- | Parse a count line into atom count, bond count, and any extra numbers.
 --   For example, the line "  3  2  0  0  0               999 V2000" will return (3,2,[]).
