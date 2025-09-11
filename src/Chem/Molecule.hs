@@ -97,14 +97,15 @@ edgeSystems m e =
 
 -- | Effective bond order for an edge, combining \963 and delocalised systems.
 effectiveOrder :: Molecule -> Edge -> Double
-effectiveOrder m e = sigma + piParts
+effectiveOrder m e = sigma + piContribution
   where
     sigma = if e `S.member` localBonds m then 1.0 else 0.0
-    piParts = sum
-      [ let bs = systems m M.! sid in
-        fromIntegral (sharedElectrons bs) /
-        (2.0 * fromIntegral (S.size (memberEdges bs)))
-      | sid <- edgeSystems m e ]
+    piContribution =
+      sum [ fromIntegral (sharedElectrons bs)
+              / (2.0 * fromIntegral (S.size (memberEdges bs)))
+          | sid <- edgeSystems m e
+          , let bs = systems m M.! sid
+          ]
 
 -- | Simple pretty printer for molecules.
 prettyPrintMolecule :: Molecule -> String
