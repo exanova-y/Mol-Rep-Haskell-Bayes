@@ -2,14 +2,15 @@
 module TestInference where
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Data.Maybe (catMaybes)
 import Data.List (tails)
-import Molecule
+import Chem.Molecule
+import Chem.Dietz
 import LazyPPL
 import Parser
 import Distr
 import Control.Monad
-import Coordinate
 import ExtraF
 import Constants
 import Validator
@@ -33,40 +34,35 @@ observedMoleculeIO = do
 moleculeModel :: Molecule -> Meas Molecule
 moleculeModel observed = do
   let numAtoms = 3
-  -- Generate atoms without unique IDs.
   atomsUnnumbered <- replicateM numAtoms $ do
     symbol <- sample $ uniformD [C, N, O, H]
     coord  <- sampleCoordinate
     let attr      = elementAttributes symbol
         shellsVar = elementShells symbol
-    return $ Atom { atomID = 0, atomicAttr = attr, coordinate = coord, shells = shellsVar }
-
-  -- Assign unique IDs (1,2,3) to the atoms.
-  let atoms = zipWith (\i atom -> atom { atomID = i }) [1..] atomsUnnumbered
-      atomIDs = map atomID atoms
-
-  -- Get all unique pairs of atoms (for 3 atoms: (1,2), (1,3), (2,3))
+    return $ Atom { atomID = AtomId 0
+                  , attributes = attr
+                  , coordinate = coord
+                  , shells = shellsVar
+                  , formalCharge = 0 }
+  let atomsList = zipWith (\i atom -> atom { atomID = AtomId i }) [1..] atomsUnnumbered
+      atomIDs = map atomID atomsList
   let possiblePairs = [(i, j) | (i:rest) <- tails atomIDs, j <- rest]
-
-  -- For each pair, randomly decide whether to include a bond.
-  bondsMaybe <- mapM (\pair -> do
+  bondsMaybe <- mapM (\pair@(i,j) -> do
                          includeBond <- sample $ uniformD [True, False]
                          if includeBond
                            then do
-                             bondOrder <- sample $ uniformD [1, 2, 3]
-                             let bondType = case bondOrder of
-                                               1 -> Bond { delocNum = 2, atomIDs = Nothing }
-                                               2 -> Bond { delocNum = 4, atomIDs = Nothing }
-                                               3 -> Bond { delocNum = 6, atomIDs = Nothing }
-                                               _ -> error "Invalid bond order"
-                             return $ Just (pair, bondType)
+                             order <- sample $ uniformD [1,2,3]
+                             let edge = mkEdge i j
+                             return $ Just (edge, order)
                            else return Nothing)
                       possiblePairs
-  let bondsList = catMaybes bondsMaybe
-      bondsMap  = M.fromList (getSymmetricBonds bondsList)  -- Ensure symmetry
-
-  -- Create the molecule with atoms and bonds.
-  let molecule = Molecule { atoms = atoms, bonds = bondsMap }
+  let edgesWithOrder = catMaybes bondsMaybe
+      localB = S.fromList [e | (e, _) <- edgesWithOrder]
+      systems' = M.fromList
+        [ (SystemId idx, mkBondingSystem (2*(o-1)) (S.singleton e) Nothing)
+        | ((e,o), idx) <- zip edgesWithOrder [1..], o > 1]
+      atoms = M.fromList [ (atomID a, a) | a <- atomsList ]
+      molecule = Molecule { atoms = atoms, localBonds = localB, systems = systems' }
 
   -- Score the model based on the distance to the observed molecule.
   let distance = hausdorffDistance molecule observed
@@ -78,23 +74,7 @@ moleculeModel observed = do
 --   For each unique pair (i,j) (with i < j), we randomly decide whether
 --   to include a bond. If a bond is included, we sample its bond order from [1,2,3]
 --   and then create a bond with a corresponding 'delocNum'.
-randomBonds :: Int -> Meas (M.Map (Integer, Integer) BondType)
-randomBonds n = do
-  let pairs = [ (i, j) | i <- [1..fromIntegral n], j <- [i+1 .. fromIntegral n] ]
-  bondList <- forM pairs $ \(i, j) -> do
-      include <- sample $ uniformD [False, True]
-      if include
-         then do
-           bondOrder <- sample $ uniformD [1,2,3]
-           let bondType = case bondOrder of
-                   1 -> Bond { delocNum = 2, atomIDs = Nothing }
-                   2 -> Bond { delocNum = 4, atomIDs = Nothing }
-                   3 -> Bond { delocNum = 6, atomIDs = Nothing }
-                   _ -> error "Invalid bond order"
-           return $ Just ((i, j), bondType)
-         else return Nothing
-  let bondsList = catMaybes bondList
-  return $ M.fromList (getSymmetricBonds bondsList)
+-- legacy helper removed
 
 
 --------------------------------------------------------------------------------
@@ -104,20 +84,23 @@ sampleCoordinate = do
   x <- sample $ normal 0 1
   y <- sample $ normal 0 1
   z <- sample $ normal 0 1
-  return $ Coordinate x y z
+  return $ Coordinate (Angstrom x) (Angstrom y) (Angstrom z)
 
 --------------------------------------------------------------------------------
 -- Calculate the Euclidean distance between two coordinates.
 euclideanDistance :: Coordinate -> Coordinate -> Double
 euclideanDistance (Coordinate x1 y1 z1) (Coordinate x2 y2 z2) =
-  sqrt $ (x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2
+  let dx = unAngstrom x1 - unAngstrom x2
+      dy = unAngstrom y1 - unAngstrom y2
+      dz = unAngstrom z1 - unAngstrom z2
+  in sqrt (dx*dx + dy*dy + dz*dz)
 
 --------------------------------------------------------------------------------
 -- Compute the Hausdorff distance between two molecules.
 hausdorffDistance :: Molecule -> Molecule -> Double
 hausdorffDistance mol1 mol2 =
-  let coords1 = map coordinate (atoms mol1)
-      coords2 = map coordinate (atoms mol2)
+  let coords1 = map coordinate (M.elems (atoms mol1))
+      coords2 = map coordinate (M.elems (atoms mol2))
       -- For each atom in mol1, find the distance to the closest atom in mol2.
       d1 = [minimum [euclideanDistance c1 c2 | c2 <- coords2] | c1 <- coords1]
       -- For each atom in mol2, find the distance to the closest atom in mol1.

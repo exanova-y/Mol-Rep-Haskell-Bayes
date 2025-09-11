@@ -1,30 +1,29 @@
 module Benzene where
 
-import Molecule
-import Coordinate
+import Chem.Molecule
+import Chem.Dietz
 import Constants (elementAttributes, elementShells)
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 
 benzene :: Molecule
 benzene = Molecule
-  { atoms =
-      [ Atom { atomID = i
-             , atomicAttr = elementAttributes sym
-             , coordinate = Coordinate x y z
-             , shells     = elementShells sym
-             }
+  { atoms = M.fromList
+      [ (atomID atom, atom)
       | (i,sym,x,y,z) <- atomsData
-      ]
-  , bonds = M.fromList $ getSymmetricBonds
-      [ ((1,2), ring), ((2,3), ring), ((3,4), ring)
-      , ((4,5), ring), ((5,6), ring), ((6,1), ring)
-      , ((1,7), single), ((2,8), single), ((3,9), single)
-      , ((4,10), single), ((5,11), single), ((6,12), single)
-      ]
+      , let atom = Atom { atomID = AtomId i
+                        , attributes = elementAttributes sym
+                        , coordinate = Coordinate (Angstrom x) (Angstrom y) (Angstrom z)
+                        , shells     = elementShells sym
+                        , formalCharge = 0 }]
+  , localBonds = S.fromList (map (uncurry mkEdge') sigmaEdges)
+  , systems    = M.fromList
+      [ (SystemId 1, mkBondingSystem 6 (S.fromList (map (uncurry mkEdge') ringEdges)) (Just "pi_ring")) ]
   }
   where
-    ring   = Bond { delocNum = 6, atomIDs = Just [1..6] }
-    single = Bond { delocNum = 2, atomIDs = Nothing }
+    mkEdge' a b = mkEdge (AtomId a) (AtomId b)
+    ringEdges = [(1,2),(2,3),(3,4),(4,5),(5,6),(6,1)]
+    sigmaEdges = ringEdges ++ [(1,7),(2,8),(3,9),(4,10),(5,11),(6,12)]
 
 atomsData :: [(Integer, AtomicSymbol, Double, Double, Double)]
 atomsData =

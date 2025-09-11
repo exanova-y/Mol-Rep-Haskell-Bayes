@@ -10,11 +10,12 @@ import Data.Void
 import System.Directory
 import System.FilePath
 import Control.Monad
-import Molecule
+import Chem.Molecule
+import Chem.Dietz
 import Constants
 import Orbital
-import Coordinate
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 
 type Parser = Parsec Void String
 
@@ -31,7 +32,7 @@ processSDFDirectory dirPath = do
         case result of
             Left err -> do
                 putStrLn $ "Error parsing file " ++ filePath ++ ": " ++ errorBundlePretty err
-                return (Molecule [] M.empty, 0.0)
+                return (Molecule M.empty S.empty M.empty, 0.0)
             Right moleculeAndDbl -> return moleculeAndDbl
 
 processSDFFile :: FilePath -> IO ()
@@ -67,9 +68,10 @@ parseSDFContents = do
     manyTill anySingle (try $ string "\n")
     countLine <- manyTill anySingle (try $ string "\n")
     let (atomCount, bondCount, _) = parseCountLine countLine
-    atoms <- zipWithM parseAtom [1..atomCount] (replicate atomCount ())
+    atomsList <- zipWithM parseAtom [1..atomCount] (replicate atomCount ())
     bondLines <- count bondCount (manyTill anySingle (try $ string "\n"))
-    let bondMatrix = buildBondMatrix atomCount bondLines
+    let (localB, systems') = buildBondData bondLines
+        atoms = M.fromList [ (atomID a, a) | a <- atomsList ]
 
     -- Parse the "M END" line and any additional lines
     void $ manyTill anySingle (try $ string ">  <logS>\n")
@@ -83,24 +85,25 @@ parseSDFContents = do
 
     -- Skip the remaining lines
     manyTill anySingle eof
-    return (Molecule atoms bondMatrix, logSValue)
+    return (Molecule atoms localB systems', logSValue)
 
-buildBondMatrix :: Int -> [String] -> M.Map (Integer, Integer) BondType
-buildBondMatrix atomCount bondLines =
-    M.fromList $ getSymmetricBonds $ map parseBondLine bondLines
+buildBondData :: [String] -> (S.Set Edge, M.Map SystemId BondingSystem)
+buildBondData bondLines =
+    (S.fromList edges, M.fromList systems)
   where
+    parsed = map parseBondLine bondLines
+    edges = map fst parsed
+    systems = [ (SystemId i, mkBondingSystem (2*(n-1)) (S.singleton e) Nothing)
+              | ((e,n), i) <- zip parsed [1..], n > 1]
+
     parseBondLine bondLine =
         case words bondLine of
-            (atom1Str:atom2Str:bondOrderStr:_) ->
-                let atom1ID = read atom1Str
-                    atom2ID = read atom2Str
-                    bondOrder = read bondOrderStr
-                    bondType = case bondOrder of
-                        1 -> Bond {delocNum = 2, atomIDs = Nothing}
-                        2 -> Bond {delocNum = 4, atomIDs = Nothing}
-                        3 -> Bond {delocNum = 6, atomIDs = Nothing}
-                        _ -> error "Invalid bond order"
-                in ((atom1ID, atom2ID), bondType)
+            (a1:a2:orderStr:_) ->
+                let i = read a1
+                    j = read a2
+                    order = read orderStr :: Int
+                    edge = mkEdge (AtomId i) (AtomId j)
+                in (edge, order)
             _ -> error "Invalid bond line format"
 
 
@@ -133,7 +136,7 @@ parseAtom atomicID _ = do
     charge <- parseCharge 
 
     manyTill anySingle (try $ string "\n")
-    return $ makeAtom atomicID (symbol, Coordinate x y z)
+    return $ makeAtom atomicID (symbol, Coordinate (Angstrom x) (Angstrom y) (Angstrom z))
     
 parseDouble :: Parser Double
 parseDouble = do
@@ -167,14 +170,18 @@ parseAtomicSymbol = do
 
 makeAtom :: Int -> (AtomicSymbol, Coordinate) -> Atom
 makeAtom atomicID (symbol, coord) =
-    Atom (fromIntegral $ atomicID) (elementAttributes symbol) coord (elementShells symbol)
+    Atom { atomID = AtomId (fromIntegral atomicID)
+         , attributes = elementAttributes symbol
+         , coordinate = coord
+         , shells = elementShells symbol
+         , formalCharge = 0 }
 
 processAtoms :: FilePath -> (Molecule, Double) -> IO ()
 processAtoms filePath (molecule, logSValue) = do
     putStrLn $ "Parsed molecule from file: " ++ filePath
     putStrLn $ "LogS value: " ++ show logSValue
     putStrLn "Parsed atoms:"
-    mapM_ putStrLn (map show (atoms molecule))
+    mapM_ putStrLn (map show (M.elems (atoms molecule)))
 
 test :: IO ()
 test = do
@@ -196,9 +203,9 @@ parseDB1Contents = do
     void $ manyTill anySingle (try $ string "\n")
     countLine <- manyTill anySingle (try $ string "\n")
     let (atomCount, bondCount, _) = parseCountLine countLine
-    atoms <- zipWithM parseAtom [1 .. atomCount] (replicate atomCount ())
+    atomsList <- zipWithM parseAtom [1 .. atomCount] (replicate atomCount ())
     bondLines <- count bondCount (manyTill anySingle (try $ string "\n"))
-    let bondMatrix = buildBondMatrix atomCount bondLines
+    let (localB, systems') = buildBondData bondLines
 
     -- Optionally parse the logP section.
     -- We first use lookAhead to see if the marker is present.
@@ -215,7 +222,8 @@ parseDB1Contents = do
 
     -- Skip the remaining lines until "$$$$\n"
     void $ manyTill anySingle (try $ string "$$$$\n")
-    return (Molecule atoms bondMatrix, logPValue)
+    let atoms = M.fromList [ (atomID a, a) | a <- atomsList ]
+    return (Molecule atoms localB systems', logPValue)
 
 parseDB1File :: FilePath -> IO [(Molecule, Double)]
 parseDB1File filePath = do

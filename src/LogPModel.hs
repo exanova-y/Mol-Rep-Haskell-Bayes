@@ -1,22 +1,24 @@
 module LogPModel where
 
-import Molecule
+import Chem.Molecule
+import Chem.Dietz
 import Distr
 import LazyPPL
 import Control.Monad
 import Numeric.Log
 import Parser
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 import ExtraF
 
 
 -- | A simple feature extraction function that counts the number of atoms in a molecule
 moleculeSize :: Molecule -> Double
-moleculeSize = fromIntegral . length . atoms
+moleculeSize = fromIntegral . M.size . atoms
 
 -- | Compute the total molecular weight of a molecule
 moleculeWeight :: Molecule -> Double
-moleculeWeight = Prelude.sum . map (atomicWeight . atomicAttr) . atoms
+moleculeWeight = Prelude.sum . map (atomicWeight . attributes) . M.elems . atoms
 
 -- | Compute the approximate surface area of a molecule (using a simple heuristic)
 moleculeSurfaceArea :: Molecule -> Double
@@ -24,9 +26,9 @@ moleculeSurfaceArea mol = let size = moleculeSize mol in 4.0 * pi * (size ** (2.
 
 -- | Compute the total bond order of a molecule
 moleculeBondOrder :: Molecule -> Double
-moleculeBondOrder = fromIntegral . Prelude.sum . map (uncurry bondOrder) . M.toList . bonds
-  where
-    bondOrder _ (Bond n _) = n
+moleculeBondOrder m =
+  let edgeSet = localBonds m `S.union` S.unions (map memberEdges (M.elems (systems m)))
+  in sum [ effectiveOrder m e | e <- S.toList edgeSet ]
 
 -- | The generative model for logP values
 logPModel :: (Molecule, Double) -> Meas (Double, Double, Double, Double, Double)

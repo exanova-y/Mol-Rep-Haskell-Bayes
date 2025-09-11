@@ -1,8 +1,8 @@
 
 
-module Constants where 
+module Constants where
 
-import Molecule
+import Chem.Molecule
 import qualified Data.Vector as V
 import LazyPPL
 import Orbital
@@ -11,6 +11,7 @@ import Data.Maybe
 
 -- Takes the bond order and two atomic symbols and gives the equilibrium bond length between them.
 -- Currently this is only working for covalent single bonds.
+type EquilibriumBondLength = Angstrom
 equilibriumBondLengths :: Integer -> AtomicSymbol -> AtomicSymbol -> EquilibriumBondLength
 equilibriumBondLengths bondOrder symbol1 symbol2 =
     case (bondOrder, symbol1, symbol2) of
