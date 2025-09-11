@@ -1,6 +1,7 @@
 module Serialisable where
 
 import Chem.Molecule
+import Chem.Dietz ()
 
 -- Writing the molecule to a file
 writeMoleculeToFile :: FilePath -> Molecule -> IO ()

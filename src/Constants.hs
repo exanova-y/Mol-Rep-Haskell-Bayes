@@ -3,6 +3,7 @@
 module Constants where
 
 import Chem.Molecule
+import Chem.Dietz ()
 import qualified Data.Vector as V
 import LazyPPL
 import Orbital

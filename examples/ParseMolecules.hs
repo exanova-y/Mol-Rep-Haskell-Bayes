@@ -3,6 +3,7 @@ module Main where
 import ParserSingle (parseSDFFileNoLog)
 
 import Chem.Molecule (prettyPrintMolecule)
+import Chem.Dietz ()
 import Text.Megaparsec (errorBundlePretty)
 import ValidatorDietz (validateMolecule)
 

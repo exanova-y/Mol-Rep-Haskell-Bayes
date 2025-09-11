@@ -44,10 +44,10 @@ moleculeModel observed = do
                   , shells = shellsVar
                   , formalCharge = 0 }
   let atomsList = zipWith (\i atom -> atom { atomID = AtomId i }) [1..] atomsUnnumbered
-      atomIDs = map atomID atomsList
+      ids   = map atomID atomsList
       atoms = M.fromList [ (atomID a, a) | a <- atomsList ]
       initialMol = Molecule { atoms = atoms, localBonds = S.empty, systems = M.empty }
-      possiblePairs = [(i, j) | (i:rest) <- tails atomIDs, j <- rest]
+      possiblePairs = [(i, j) | (i:rest) <- tails ids, j <- rest]
 
   (molecule, _) <- foldM sampleBond (initialMol, 1) possiblePairs
 
@@ -59,9 +59,7 @@ moleculeModel observed = do
 
 -- | Randomly generate a bond graph for a molecule with n atoms.
 --   For each unique pair (i,j) (with i < j), we randomly decide whether
---   to include a bond. If a bond is included, we sample its bond order from [1,2,3]
---   and then create a bond with a corresponding 'delocNum'.
--- legacy helper removed
+--   to include a bond. If a bond is included, we sample its bond order from [1,2,3].
 
 
 --------------------------------------------------------------------------------
