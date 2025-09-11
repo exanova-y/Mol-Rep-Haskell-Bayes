@@ -5,7 +5,7 @@ import Chem.IO.SDF (readSDF)
 import Chem.Molecule (prettyPrintMolecule)
 import Chem.Dietz ()
 import Text.Megaparsec (errorBundlePretty)
-import Chem.Validate (validateMolecule)
+import Chem.Validate (validateMolecule, ValidationWarning(..))
 
 -- | Simple example parsing the provided benzene and water SDF files.
 main :: IO ()
@@ -19,7 +19,9 @@ main = do
             Left errs -> do
               putStrLn "Benzene invalid:"
               mapM_ (putStrLn . show) errs
-            Right _ -> putStrLn $ prettyPrintMolecule mol
+            Right (_, warns) -> do
+              mapM_ (putStrLn . ("Warning: " ++) . show) warns
+              putStrLn $ prettyPrintMolecule mol
 
     putStrLn "\nParsing water.sdf"
     water <- readSDF "molecules/water.sdf"
@@ -30,4 +32,6 @@ main = do
             Left errs -> do
               putStrLn "Water invalid:"
               mapM_ (putStrLn . show) errs
-            Right _ -> putStrLn $ prettyPrintMolecule mol
+            Right (_, warns) -> do
+              mapM_ (putStrLn . ("Warning: " ++) . show) warns
+              putStrLn $ prettyPrintMolecule mol

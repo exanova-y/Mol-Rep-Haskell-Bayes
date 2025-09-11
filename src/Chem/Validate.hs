@@ -1,13 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Chem.Validate
   ( ValidationError(..)
+  , ValidationWarning(..)
   , validateMolecule
   , usedElectronsAt
   ) where
 
 import           Chem.Molecule
 import           Chem.Dietz
-import           Constants (getMaxBondsSymbol)
+import           Constants (nominalValence)
 import qualified Data.Map.Strict as M
 import qualified Data.Set        as S
 
@@ -16,7 +17,11 @@ data ValidationError
   = SelfBond Edge                    -- ^ bond from an atom to itself
   | MissingAtom Edge AtomId          -- ^ bond references a missing atom
   | SystemMissingAtom SystemId Edge  -- ^ system references a missing atom
-  | ElectronLimitExceeded AtomId Double Double -- ^ actual vs allowed electrons
+  deriving (Eq, Show)
+
+-- | Non-fatal validation warnings.
+data ValidationWarning
+  = ElectronLimitExceeded AtomId Double Double -- ^ actual vs allowed electrons
   deriving (Eq, Show)
 
 -- | Total electrons used at an atom, combining σ bonds and Dietz pools.
@@ -38,10 +43,10 @@ usedElectronsAt m v = sigma + system
       in if totalEdges == 0 then 0 else s * degSv / (2 * totalEdges)
 
 -- | Validate a molecule according to Dietz bonding rules.
-validateMolecule :: Molecule -> Either [ValidationError] Molecule
+validateMolecule :: Molecule -> Either [ValidationError] (Molecule, [ValidationWarning])
 validateMolecule m =
   case errs of
-    [] -> Right m
+    [] -> Right (m, warnings)
     _  -> Left errs
   where
     atomSet = M.keysSet (atoms m)
@@ -65,12 +70,13 @@ validateMolecule m =
       ]
 
     -- Electron accounting per atom.
-    electronErrs =
+    electronWarnings =
       [ ElectronLimitExceeded i count limit
       | (i, atom) <- M.toList (atoms m)
       , let count = usedElectronsAt m i
-            limit = fromIntegral (2 * getMaxBondsSymbol (symbol (attributes atom)))
+            limit = fromIntegral (snd (nominalValence (symbol (attributes atom))))
       , count > limit
       ]
 
-    errs = sigmaErrs ++ systemErrs ++ electronErrs
+    errs = sigmaErrs ++ systemErrs
+    warnings = electronWarnings
