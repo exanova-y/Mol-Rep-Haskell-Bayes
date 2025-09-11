@@ -2,6 +2,7 @@ module Serialisable where
 
 import Chem.Molecule
 import Chem.Dietz ()
+import SampleMolecules (methane)
 
 -- Writing the molecule to a file
 writeMoleculeToFile :: FilePath -> Molecule -> IO ()
@@ -17,7 +18,7 @@ readMoleculeFromFile filePath = do
 main :: IO ()
 main = do
   -- Write the methane molecule to a file
-  writeMoleculeToFile "methane.hs" undefined
+  writeMoleculeToFile "methane.hs" methane
   
   -- Read the methane molecule from the file
   molecule <- readMoleculeFromFile "methane.hs"
