@@ -1,7 +1,7 @@
 module Orbital where 
 
 import Data.Maybe
-import Chem.Molecule (Coordinate(..), mkAngstrom)
+import Chem.Molecule.Coordinate (Coordinate(..), mkAngstrom)
 import Chem.Dietz ()
 
 -- Basic orbital types

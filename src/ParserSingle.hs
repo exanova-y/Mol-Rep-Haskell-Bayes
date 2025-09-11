@@ -8,6 +8,7 @@ import Text.Megaparsec.Char
 import Data.Void
 import Control.Monad
 import Chem.Molecule
+import Chem.Molecule.Coordinate (Coordinate(..), mkAngstrom)
 import Chem.Dietz
 import Constants
 import Orbital

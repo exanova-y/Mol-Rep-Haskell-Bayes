@@ -1,7 +1,7 @@
 module SlaterTypeOrbital where
 
 import Orbital (PureOrbital(..))
-import Chem.Molecule (Coordinate(..), mkAngstrom)
+import Chem.Molecule.Coordinate (Coordinate(..), mkAngstrom)
 import Chem.Dietz ()
 import LazyPPL (Prob, Meas, sample)
 import Distr (gamma, uniformbounded)
