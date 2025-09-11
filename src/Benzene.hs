@@ -18,7 +18,9 @@ benzene = Molecule
                         , formalCharge = 0 }]
   , localBonds = S.fromList (map (uncurry mkEdge') sigmaEdges)
   , systems    = M.fromList
-      [ (SystemId 1, mkBondingSystem 6 (S.fromList (map (uncurry mkEdge') ringEdges)) (Just "pi_ring")) ]
+      [ (SystemId 1, mkBondingSystem (NonNegative 6)
+                               (S.fromList (map (uncurry mkEdge') ringEdges))
+                               (Just "pi_ring")) ]
   }
   where
     mkEdge' a b = mkEdge (AtomId a) (AtomId b)
