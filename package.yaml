@@ -76,3 +76,11 @@ tests:
       - containers
       - megaparsec >= 9.0 && < 10.0
     language: Haskell2010
+  validation-properties:
+    main: ValidationProperties.hs
+    source-dirs: test
+    dependencies:
+      - chemalgprog
+      - QuickCheck
+      - containers
+    language: Haskell2010
