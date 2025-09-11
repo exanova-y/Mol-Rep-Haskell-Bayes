@@ -2,13 +2,9 @@
 
 module Constants where
 
-import Chem.Molecule
+import Chem.Molecule (AtomicSymbol(..), ElementAttributes(..), Angstrom(..), mkAngstrom)
 import Chem.Dietz ()
-import qualified Data.Vector as V
-import LazyPPL
-import Orbital
-import Data.Array
-import Data.Maybe
+import qualified Orbital as Orb
 
 -- Takes the bond order and two atomic symbols and gives the equilibrium bond length between them.
 -- Currently this is only working for covalent single bonds.
@@ -159,16 +155,16 @@ elementAttributes Br = ElementAttributes Br 35 79.904
 elementAttributes P = ElementAttributes P 15 30.974
 elementAttributes I = ElementAttributes I 53 126.904 -- Added case for iodine
 
-elementShells :: AtomicSymbol -> Shells 
-elementShells O = oxygen
-elementShells H = hydrogen
-elementShells N = nitrogen
-elementShells C = carbon
-elementShells B = boron
-elementShells Fe = iron
-elementShells F = fluorine
-elementShells Cl = chlorine
-elementShells S = sulfur
-elementShells Br = bromine -- Added case for bromine
-elementShells P = phosphorus -- Added case for phosphorus
-elementShells I = iodine -- Added case for iodine
+elementShells :: AtomicSymbol -> Orb.Shells
+elementShells O = Orb.oxygen
+elementShells H = Orb.hydrogen
+elementShells N = Orb.nitrogen
+elementShells C = Orb.carbon
+elementShells B = Orb.boron
+elementShells Fe = Orb.iron
+elementShells F = Orb.fluorine
+elementShells Cl = Orb.chlorine
+elementShells S = Orb.sulfur
+elementShells Br = Orb.bromine -- Added case for bromine
+elementShells P = Orb.phosphorus -- Added case for phosphorus
+elementShells I = Orb.iodine -- Added case for iodine
