@@ -17,6 +17,10 @@ module Chem.Molecule
     -- * Helpers
   , addSigma
   , distanceAngstrom
+  , neighborsSigma
+  , edgeSystems
+  , effectiveOrder
+  , prettyPrintMolecule
   ) where
 
 import           GHC.Generics (Generic)
@@ -24,6 +28,7 @@ import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import           Data.Set (Set)
 import qualified Data.Set as S
+import           Data.List (intercalate)
 
 import           Chem.Dietz
 
@@ -90,3 +95,38 @@ distanceAngstrom a b =
       dy = unAngstrom y1 - unAngstrom y2
       dz = unAngstrom z1 - unAngstrom z2
   in Angstrom (sqrt (dx*dx + dy*dy + dz*dz))
+
+-- | Sigma neighbors of a given atom.
+neighborsSigma :: Molecule -> AtomId -> Set AtomId
+neighborsSigma m i =
+  S.fromList [ if a == i then b else a
+             | Edge a b <- S.toList (localBonds m)
+             , a == i || b == i]
+
+-- | All bonding systems containing a given edge.
+edgeSystems :: Molecule -> Edge -> [BondingSystem]
+edgeSystems m e =
+  [ bs | bs <- M.elems (systems m), e `S.member` memberEdges bs ]
+
+-- | Effective bond order for an edge, combining sigma and delocalised systems.
+effectiveOrder :: Molecule -> Edge -> Double
+effectiveOrder m e = sigma + piParts
+  where
+    sigma = if e `S.member` localBonds m then 1.0 else 0.0
+    piParts = sum
+      [ fromIntegral (sharedElectrons bs) /
+        (2.0 * fromIntegral (S.size (memberEdges bs)))
+      | bs <- edgeSystems m e ]
+
+-- | Simple pretty printer for molecules.
+prettyPrintMolecule :: Molecule -> String
+prettyPrintMolecule m =
+  let atomLines =
+        [ show (atomID a) ++ ": " ++ show (symbol (attributes a))
+        | a <- M.elems (atoms m) ]
+      bondLines =
+        [ show i ++ "-" ++ show j
+        | Edge i j <- S.toList (localBonds m) ]
+  in "Atoms:\n" ++ intercalate "\n" atomLines
+     ++ "\nBonds:\n" ++ intercalate ", " bondLines
+

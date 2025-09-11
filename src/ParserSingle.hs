@@ -7,11 +7,12 @@ import Text.Megaparsec
 import Text.Megaparsec.Char
 import Data.Void
 import Control.Monad
-import Molecule
+import Chem.Molecule
+import Chem.Dietz
 import Constants
 import Orbital
-import Coordinate
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 
 -- | The parser type alias.
 type Parser = Parsec Void String
@@ -31,15 +32,16 @@ parseSDFContentsNoLog = do
     countLine <- manyTill anySingle newline
     let (atomCount, bondCount, _) = parseCountLine countLine
     -- Parse the atoms.
-    atoms <- zipWithM parseAtom [1..atomCount] (replicate atomCount ())
+    atomsList <- zipWithM parseAtom [1..atomCount] (replicate atomCount ())
     -- Parse the bond lines.
     bondLines <- count bondCount (manyTill anySingle newline)
-    let bondMatrix = buildBondMatrix atomCount bondLines
+    let (localB, systems') = buildBondData bondLines
+        atoms = M.fromList [ (atomID a, a) | a <- atomsList ]
     -- Skip until the "M  END" marker.
     void $ manyTill anySingle (try (string "M  END"))
     -- Skip the remainder of the file.
     void $ manyTill anySingle eof
-    return (Molecule atoms bondMatrix)
+    return (Molecule atoms localB systems')
 
 -- | Parse an SDF file from the given file path and return a Molecule.
 parseSDFFileNoLog :: FilePath -> IO (Either (ParseErrorBundle String Void) Molecule)
@@ -52,22 +54,23 @@ parseSDFFileNoLog filePath = do
 --------------------------------------------------------------------------------
 
 -- | Build a bond matrix from the bond lines.
-buildBondMatrix :: Int -> [String] -> M.Map (Integer, Integer) BondType
-buildBondMatrix atomCount bondLines =
-    M.fromList $ getSymmetricBonds $ map parseBondLine bondLines
+buildBondData :: [String] -> (S.Set Edge, M.Map SystemId BondingSystem)
+buildBondData bondLines =
+    (S.fromList edges, M.fromList systems)
   where
+    parsed = map parseBondLine bondLines
+    edges  = map fst parsed
+    systems = [ (SystemId i, mkBondingSystem (2*(n-1)) (S.singleton e) Nothing)
+              | ((e,n), i) <- zip parsed [1..], n > 1]
+
     parseBondLine bondLine =
         case words bondLine of
-            (atom1Str:atom2Str:bondOrderStr:_) ->
-                let atom1ID = read atom1Str
-                    atom2ID = read atom2Str
-                    bondOrder = read bondOrderStr
-                    bondType = case bondOrder of
-                        1 -> Bond { delocNum = 2, atomIDs = Nothing }
-                        2 -> Bond { delocNum = 4, atomIDs = Nothing }
-                        3 -> Bond { delocNum = 6, atomIDs = Nothing }
-                        _ -> error "Invalid bond order"
-                in ((atom1ID, atom2ID), bondType)
+            (a1:a2:orderStr:_) ->
+                let i = read a1
+                    j = read a2
+                    order = read orderStr :: Int
+                    edge = mkEdge (AtomId i) (AtomId j)
+                in (edge, order)
             _ -> error "Invalid bond line format"
 
 -- | Parse a count line into atom count, bond count, and any extra numbers.
@@ -92,7 +95,7 @@ parseAtom atomicID _ = do
     space
     _ <- parseCharge  -- charge is parsed but ignored
     manyTill anySingle newline
-    return $ makeAtom atomicID (symbol, Coordinate x y z)
+    return $ makeAtom atomicID (symbol, Coordinate (Angstrom x) (Angstrom y) (Angstrom z))
 
 -- | Parse a double number.
 parseDouble :: Parser Double
@@ -138,5 +141,9 @@ parseCharge = do
 -- | Create an Atom given an ID, atomic symbol, and coordinate.
 makeAtom :: Int -> (AtomicSymbol, Coordinate) -> Atom
 makeAtom atomicID (symbol, coord) =
-    Atom (fromIntegral atomicID) (elementAttributes symbol) coord (elementShells symbol)
+    Atom { atomID = AtomId (fromIntegral atomicID)
+         , attributes = elementAttributes symbol
+         , coordinate = coord
+         , shells = elementShells symbol
+         , formalCharge = 0 }
 

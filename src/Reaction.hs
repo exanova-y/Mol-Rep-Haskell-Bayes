@@ -1,5 +1,5 @@
 module Reaction where
-import Molecule
+import Chem.Molecule
 
 
 -- Reactions or transformations between chemical species

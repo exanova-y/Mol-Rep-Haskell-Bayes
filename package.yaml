@@ -48,7 +48,6 @@ library:
     - Benzene
     - ParserSingle
   other-modules:
-    - Molecule
     - ExtraF
     - LogPModel
     - Validator

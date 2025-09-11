@@ -2,7 +2,7 @@ module Main where
 
 import ParserSingle (parseSDFFileNoLog)
 
-import Molecule (prettyPrintMolecule)
+import Chem.Molecule (prettyPrintMolecule)
 import Text.Megaparsec (errorBundlePretty)
 
 -- | Simple example parsing the provided benzene and water SDF files.
