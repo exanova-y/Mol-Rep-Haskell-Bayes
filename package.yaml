@@ -44,8 +44,8 @@ library:
     - Chem.IO.SDF
     - Reaction
     - Serialisable
-    - TestInference
     - Benzene
+    - LogPModel
   other-modules:
     - ExtraF
   language: Haskell2010

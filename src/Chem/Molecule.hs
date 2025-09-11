@@ -9,7 +9,7 @@
 module Chem.Molecule
   ( -- * Core types
     AtomicSymbol(..), ElementAttributes(..)
-  , module Chem.Molecule.Coordinate
+  , Angstrom(..), mkAngstrom, unAngstrom, Coordinate(..)
   , Shells(..)
   , Atom(..)
   , Molecule(..)
