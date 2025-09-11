@@ -82,3 +82,11 @@ tests:
       - QuickCheck
       - containers
     language: Haskell2010
+  edge-properties:
+    main: EdgeProperties.hs
+    source-dirs: test
+    dependencies:
+      - chemalgprog
+      - QuickCheck
+      - containers
+    language: Haskell2010
