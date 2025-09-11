@@ -1,7 +1,6 @@
 module Benzene where
 
 import Chem.Molecule
-import Chem.Molecule.Coordinate (Coordinate(..), mkAngstrom)
 import Chem.Dietz
 import Constants (elementAttributes, elementShells)
 import qualified Data.Map.Strict as M
