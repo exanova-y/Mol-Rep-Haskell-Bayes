@@ -38,7 +38,7 @@ usedElectronsAt m v = sigma + system
                     [ ()
                     | Edge x y <- S.toList (memberEdges bs)
                     , x == a || y == a ]
-          s = fromIntegral (sharedElectrons bs)
+          s = fromIntegral (getNN (sharedElectrons bs))
           totalEdges = fromIntegral (S.size (memberEdges bs))
       in if totalEdges == 0 then 0 else s * degSv / (2 * totalEdges)
 

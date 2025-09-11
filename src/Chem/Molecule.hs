@@ -101,7 +101,7 @@ effectiveOrder m e = sigma + piContribution
   where
     sigma = if e `S.member` localBonds m then 1.0 else 0.0
     piContribution =
-      sum [ fromIntegral (sharedElectrons bs)
+      sum [ fromIntegral (getNN (sharedElectrons bs))
               / (2.0 * fromIntegral (S.size (memberEdges bs)))
           | sid <- edgeSystems m e
           , let bs = systems m M.! sid
