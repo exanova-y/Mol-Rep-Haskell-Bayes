@@ -2,13 +2,13 @@
 module Main (main) where
 
 import Test.Hspec
-import ParserSingle (parseSDFFileNoLog, parseSDFContentsNoLog)
+import Chem.IO.SDF (readSDF, parseSDF)
 import Chem.Molecule
 import Chem.Molecule.Coordinate (Coordinate(..), unAngstrom)
 import Chem.Dietz
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
-import Text.Megaparsec (runParser, errorBundlePretty)
+import Text.Megaparsec (errorBundlePretty)
 
 main :: IO ()
 main = hspec spec
@@ -16,12 +16,12 @@ main = hspec spec
 spec :: Spec
 spec = describe "SDF round-trip" $ do
   it "preserves atom count and sigma adjacency" $ do
-    parsed <- parseSDFFileNoLog "molecules/benzene.sdf"
+    parsed <- readSDF "molecules/benzene.sdf"
     case parsed of
       Left err -> expectationFailure (errorBundlePretty err)
       Right mol -> do
         let sdf = moleculeToSDF mol
-        case runParser parseSDFContentsNoLog "roundtrip" sdf of
+        case parseSDF sdf of
           Left err -> expectationFailure (errorBundlePretty err)
           Right mol' -> do
             M.size (atoms mol') `shouldBe` M.size (atoms mol)

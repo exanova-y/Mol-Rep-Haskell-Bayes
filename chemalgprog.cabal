@@ -30,15 +30,13 @@ library
         Group
         Orbital
         SlaterTypeOrbital
-        Parser
+        Chem.IO.SDF
         Reaction
         Serialisable
         TestInference
         Benzene
-        ParserSingle
     other-modules:
         ExtraF
-        LogPModel
     hs-source-dirs:
         src
     default-language: Haskell2010
