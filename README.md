@@ -2,30 +2,38 @@ This is a datatype for molecules, complete with orbitals, reaction dynamics and 
 
 ## Quick Start
 
-```bash
-stack build
-stack exec chemalgprog
-```
+1. **Build the project**
 
-`package.yaml` is processed by `hpack` to generate `chemalgprog.cabal`.
+   ```bash
+   stack build
+   ```
 
-## Reproducing Paper Experiments
+   `package.yaml` is processed by `hpack` to generate `chemalgprog.cabal`.
 
-The accompanying paper describes two illustrative experiments:
+2. **Run the demonstration program**
 
-- **LogP regression** – `stack exec chemalgprog` parses and validates `molecules/benzene.sdf`, then performs a Metropolis–Hastings regression over the molecules in `logp/DB1.sdf` to fit coefficients predicting the partition coefficient (logP). The learned model is applied to the molecules in `logp/DB2.sdf` and prints both predicted and observed values.
+   ```bash
+   stack exec chemalgprog
+   ```
 
-Sample SDF files for this experiment are provided in `molecules/` and `logp/`.
+   This executable:
+
+   - Parses and validates `molecules/benzene.sdf`, printing the structure as a sanity check.
+   - Parses `molecules/water.sdf` and uses it as a test molecule.
+   - Performs a Metropolis–Hastings regression on the molecules in `logp/DB1.sdf` to learn coefficients that predict the partition coefficient (logP).
+   - Applies the learned model to predict the logP of water and then prints predicted and observed values for each molecule in `logp/DB2.sdf`.
+
+3. **Parse molecules independently (optional)**
+
+   ```bash
+   stack exec parse-molecules
+   ```
+
+   The example pretty-prints the contents of `molecules/benzene.sdf` and `molecules/water.sdf` using the library parser.
+
+Sample SDF files for these experiments are provided in `molecules/` and `logp/`.
 
 An example Haskell representation of a molecule is available in `src/Benzene.hs`, which defines the `benzene` structure programmatically.
-
-The `examples/ParseMolecules.hs` program shows how to parse the provided `molecules/benzene.sdf` and `molecules/water.sdf` files:
-
-```bash
-stack exec parse-molecules
-```
-
-The example pretty-prints each molecule's structure using the library parser.
 
 
 Author: Oliver Goldstein (oliverjgoldstein@gmail.com / oliver.goldstein@reuben.ox.ac.uk)
@@ -40,6 +48,6 @@ The probabilistic programming components (`LazyPPL.hs` and `Distr.hs`) are taken
 
 ## What the Program Does
 
-The `chemalgprog` executable parses the sample benzene molecule (`molecules/benzene.sdf`), validates it with `Chem.Validate`, pretty‑prints the structure, and then runs the `LogPModel` regression. Coefficients are inferred from the training set `logp/DB1.sdf` and used to predict logP values for the molecules in `logp/DB2.sdf`. The `parse-molecules` example demonstrates parsing and validating multiple SDF files.
+The `chemalgprog` executable parses the sample benzene molecule (`molecules/benzene.sdf`) to showcase structural validation, then loads `molecules/water.sdf` as the test molecule for the regression. Coefficients are inferred from the training set `logp/DB1.sdf`, the logP of water is predicted from these coefficients, and predicted versus observed values for all molecules in `logp/DB2.sdf` are printed. The `parse-molecules` example demonstrates parsing and validating multiple SDF files.
 
 
