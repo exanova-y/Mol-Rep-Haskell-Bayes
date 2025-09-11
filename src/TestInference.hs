@@ -53,9 +53,10 @@ moleculeModel observed = do
 
   (molecule, _) <- foldM sampleBond (initialMol, 1) possiblePairs
 
-  -- Score the model based on the distance to the observed molecule.
-  let distance = hausdorffDistance molecule observed
-  score $ normalPdf 0 1 (unAngstrom distance)
+  -- Score the model based on the Hausdorff distance (in Angstroms)
+  -- to the observed molecule.
+  let distAng = hausdorffDistance molecule observed
+  score $ normalPdf 0 1 (unAngstrom distAng)
 
   return molecule
 

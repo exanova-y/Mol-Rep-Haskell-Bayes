@@ -27,7 +27,7 @@ moleculeSurfaceArea mol = let size = moleculeSize mol in 4.0 * pi * (size ** (2.
 -- | Compute the total effective bond order of a molecule
 totalEffectiveOrder :: Molecule -> Double
 totalEffectiveOrder m =
-  let edgeSet = localBonds m `S.union` S.unions (map memberEdges (M.elems (systems m)))
+  let edgeSet = S.unions (localBonds m : map memberEdges (M.elems (systems m)))
   in sum [ effectiveOrder m e | e <- S.toList edgeSet ]
 
 -- | The generative model for logP values
