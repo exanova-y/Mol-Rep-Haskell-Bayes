@@ -1,5 +1,6 @@
 module Reaction where
 import Chem.Molecule
+import Chem.Dietz ()
 
 
 -- Reactions or transformations between chemical species

@@ -1,6 +1,7 @@
 
 module Group where
 import Chem.Molecule
+import Chem.Dietz ()
 import Data.List (transpose)
 
 data MoleculeRotation = MoleculeRotation Molecule Coordinate Double deriving (Show)
