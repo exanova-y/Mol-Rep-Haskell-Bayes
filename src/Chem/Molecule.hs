@@ -10,7 +10,7 @@ module Chem.Molecule
   ( -- * Core types
     AtomicSymbol(..), ElementAttributes(..)
   , Angstrom(..), mkAngstrom, unAngstrom, Coordinate(..)
-  , Shells(..)
+  , Shells
   , Atom(..)
   , Molecule(..)
     -- * Helpers
@@ -31,6 +31,7 @@ import           Data.List (intercalate)
 
 import           Chem.Dietz
 import           Chem.Molecule.Coordinate
+import qualified Orbital as Orb
 
 -- ===== Element + units =====
 
@@ -43,9 +44,9 @@ data ElementAttributes = ElementAttributes
   , atomicWeight :: Double
   } deriving (Eq, Show, Read, Generic)
 
--- Placeholder (keep/extend your existing electronic structure ADT if desired)
-data Shells = Shells
-  deriving (Eq, Show, Read, Generic)
+-- | Electronic shell structure for an atom.
+--   Re-exported from "Orbital" to integrate with the molecular types.
+type Shells = Orb.Shells
 
 -- ===== Atoms =====
 

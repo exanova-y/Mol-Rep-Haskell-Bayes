@@ -16,8 +16,7 @@ import           Text.Read (readMaybe)
 import           Chem.Molecule
 import           Chem.Molecule.Coordinate (Coordinate(..), mkAngstrom)
 import           Chem.Dietz
-import           Constants (elementAttributes)
-import           Orbital (elementShells)
+import           Constants (elementAttributes, elementShells)
 
 -- | Parser type on String input.
 type Parser = Parsec Void String
