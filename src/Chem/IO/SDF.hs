@@ -9,7 +9,7 @@ import           Data.Void (Void)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import           Text.Megaparsec
-import           Text.Megaparsec.Char
+import           Text.Megaparsec.Char hiding (eol)
 import qualified Text.Megaparsec.Char.Lexer as L
 import           Text.Read (readMaybe)
 
