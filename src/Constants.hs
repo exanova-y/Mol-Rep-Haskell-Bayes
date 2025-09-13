@@ -125,6 +125,7 @@ elementAttributes S = ElementAttributes S 16 32.065
 elementAttributes Br = ElementAttributes Br 35 79.904
 elementAttributes P = ElementAttributes P 15 30.974
 elementAttributes I = ElementAttributes I 53 126.904 -- Added case for iodine
+elementAttributes Na = ElementAttributes Na 11 22.99 -- Added
 
 elementShells :: AtomicSymbol -> Orb.Shells
 elementShells O = Orb.oxygen
@@ -139,4 +140,4 @@ elementShells S = Orb.sulfur
 elementShells Br = Orb.bromine -- Added case for bromine
 elementShells P = Orb.phosphorus -- Added case for phosphorus
 elementShells I = Orb.iodine -- Added case for iodine
-
+elementShells Na = Orb.sodium -- Added case for sodium

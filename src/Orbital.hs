@@ -453,7 +453,7 @@ fluorine =
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
-  , Shell
+  , Shell -- for s^2
       { principalQuantumNumber = 2
       , sSubShell = Just (SubShell 
                           [ Orbital { orbitalType      = So
@@ -462,7 +462,7 @@ fluorine =
                                     , hybridComponents = Nothing
                                     }
                           ])
-      , pSubShell = Just (SubShell 
+      , pSubShell = Just (SubShell -- for p^5
                           [ Orbital { orbitalType      = Px
                                     , electronCount    = 2
                                     , orientation      = Just (angCoord 1 0 0)
@@ -479,6 +479,57 @@ fluorine =
                                     , hybridComponents = Nothing
                                     }
                           ])
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  ]
+
+-- Sodium atom: 1s^2, 2s^2, 2p^6, 3s^1
+sodium :: Shells
+sodium =
+  [ Shell
+      { principalQuantumNumber = 1
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing }])
+      , pSubShell = Nothing
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 2
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 2
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing }])
+      , pSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = Px
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 1 0 0)
+                                    , hybridComponents = Nothing }
+                          , Orbital { orbitalType      = Py
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 1 0)
+                                    , hybridComponents = Nothing }
+                          , Orbital { orbitalType      = Pz
+                                    , electronCount    = 2
+                                    , orientation      = Just (Coordinate 0 0 1)
+                                    , hybridComponents = Nothing }
+                          ])
+      , dSubShell = Nothing
+      , fSubShell = Nothing
+      }
+  , Shell
+      { principalQuantumNumber = 3
+      , sSubShell = Just (SubShell
+                          [ Orbital { orbitalType      = So
+                                    , electronCount    = 1
+                                    , orientation      = Nothing
+                                    , hybridComponents = Nothing }])
+      , pSubShell = Nothing
       , dSubShell = Nothing
       , fSubShell = Nothing
       }
@@ -952,3 +1003,5 @@ iodine =
       , fSubShell = Nothing
       }
   ]
+
+
